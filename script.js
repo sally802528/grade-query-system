@@ -1,4 +1,4 @@
-// script.js - 完整整合版 (已修正留言發送者名稱錯誤)
+// script.js - 完整整合版 (已修正留言發送者顯示錯誤和新增/編輯按鈕顯示錯誤)
 
 // --- 預設資料設定與變數 ---
 const TEACHER_PASSWORD = 'Teacher@admin';
@@ -173,7 +173,7 @@ function displayStudentResult(student) {
     document.getElementById('admin-container').classList.add('hidden');
     document.getElementById('result-container').classList.remove('hidden');
 
-    // 填充基本資料 (image_ab3615.png, image_ac1f31.png)
+    // 填充基本資料
     document.getElementById('result-account').textContent = student.account;
     document.getElementById('result-name').textContent = maskName(student.name);
     document.getElementById('result-school').textContent = student.school; 
@@ -184,10 +184,8 @@ function displayStudentResult(student) {
     tasksTableBody.innerHTML = '';
     
     // 排序任務：已認證 > 審核中 > 認證失敗 > 未完成
-    const sortedTasks = [...student.tasks].sort((a, b) => {
-        const statusOrder = { '已認證': 4, '審核中': 3, '認證失敗': 2, '未完成': 1 };
-        return statusOrder[b.status] - statusOrder[a.status];
-    });
+    const statusOrder = { '已認證': 4, '審核中': 3, '認證失敗': 2, '未完成': 1 };
+    const sortedTasks = [...student.tasks].sort((a, b) => statusOrder[b.status] - statusOrder[a.status]);
 
     sortedTasks.forEach(task => {
         const row = tasksTableBody.insertRow();
@@ -205,7 +203,7 @@ function displayStudentResult(student) {
         let buttonHtml = '';
         
         if (task.status === '已認證') {
-            // 已認證：不能留言，只能點擊「重新提交審核」 (image_ab3596.png)
+            // 已認證：不能留言，只能點擊「重新提交審核」
             buttonHtml += `<p class="comment-status-text">此項目已通過認證，若有疑問可留言聯繫教師。</p>`;
             buttonHtml += `<button type="button" class="student-action-btn re-submit" 
                         onclick="requestReCertification('${student.account}', ${task.id})">
@@ -268,7 +266,7 @@ window.requestReCertification = function(accountId, taskId) {
 }
 
 // --- 教師管理介面邏輯 ---
-/** 渲染學生列表 (image_aa54fb.png, image_ab272d.png) */
+/** 渲染學生列表 */
 function renderStudentList() {
     const listTableBody = document.querySelector('#student-list-table tbody');
     listTableBody.innerHTML = '';
@@ -291,30 +289,10 @@ function renderStudentList() {
     });
 }
 
-/** 切換到新增模式 (image_9fd529.png) */
-window.switchToNewStudentMode = function() {
-    editingStudentId = null;
-    document.getElementById('student-form-title').textContent = '新增學生';
-    
-    // 隱藏「更新學生資料」按鈕，顯示「新增學生 (切換)」按鈕
-    document.getElementById('submit-student-btn').classList.add('hidden');
-    document.getElementById('switch-to-new-student-btn').classList.remove('hidden');
-    document.getElementById('switch-to-new-student-btn').textContent = '新增學生 (切換)';
-
-    document.getElementById('admin-account').readOnly = false;
-    
-    // 清空任務列表 
-    document.getElementById('tasks-table-admin tbody').innerHTML = '';
-    
-    // 預設值
-    document.getElementById('admin-account').value = '';
-    document.getElementById('admin-name').value = '';
-    document.getElementById('admin-school').value = '永靖高工';
-    document.getElementById('admin-class').value = '資訊二';
-    document.getElementById('admin-email').value = '';
-}
-
-/** 重設或取消編輯 */
+/**
+ * 切換到新增模式 (並清除表單)
+ * @param {boolean} showAlert - 是否顯示取消編輯的提醒
+ */
 window.resetForm = function(showAlert = true) {
     if (editingStudentId && showAlert) {
         if (!confirm('你確定要取消編輯嗎？所有未儲存的變更將會遺失。')) {
@@ -324,18 +302,37 @@ window.resetForm = function(showAlert = true) {
     
     document.getElementById('student-form').reset();
     
-    // 清空任務列表
-    document.getElementById('tasks-table-admin tbody').innerHTML = '';
-    
     // 確保預設值被寫入
     document.getElementById('admin-school').value = '永靖高工';
     document.getElementById('admin-class').value = '資訊二';
     document.getElementById('admin-email').value = '';
     
+    // 切換到新增模式
     switchToNewStudentMode();
 }
 
-/** 編輯學生 (image_a03a2d.png) */
+
+/** 修正：切換到新增模式 */
+window.switchToNewStudentMode = function() {
+    editingStudentId = null;
+    document.getElementById('student-form-title').textContent = '新增學生';
+    
+    // 修正: 提交按鈕顯示為「新增學生」，確保顯示
+    document.getElementById('submit-student-btn').classList.remove('hidden'); 
+    document.getElementById('submit-student-btn').textContent = '新增學生';
+    document.getElementById('submit-student-btn').style.backgroundColor = 'var(--primary-color)'; 
+    
+    // 修正: 隱藏切換到新增模式的按鈕 (因為已經在新模式了)
+    document.getElementById('switch-to-new-student-btn').classList.add('hidden'); 
+
+    document.getElementById('admin-account').readOnly = false;
+    
+    // 清空任務列表 
+    document.getElementById('tasks-table-admin tbody').innerHTML = '';
+    // 預設新增一條空任務 (可選，這裡保持不新增，讓使用者自行點擊 + 新增項目)
+}
+
+/** 編輯學生 */
 window.editStudent = function(accountId) {
     const student = students[accountId];
     if (!student) return;
@@ -343,10 +340,14 @@ window.editStudent = function(accountId) {
     editingStudentId = accountId;
     document.getElementById('student-form-title').textContent = `編輯學生: ${student.name}`;
     
-    // 隱藏「新增學生 (切換)」按鈕，顯示「更新學生資料」按鈕 (image_aa3674.png)
-    document.getElementById('submit-student-btn').classList.remove('hidden');
+    // 修正: 提交按鈕顯示為「更新學生資料」，確保顯示
+    document.getElementById('submit-student-btn').classList.remove('hidden'); 
     document.getElementById('submit-student-btn').textContent = '更新學生資料';
-    document.getElementById('switch-to-new-student-btn').classList.add('hidden');
+    document.getElementById('submit-student-btn').style.backgroundColor = 'var(--primary-color)'; 
+    
+    // 修正: 顯示切換到新增模式的按鈕
+    document.getElementById('switch-to-new-student-btn').classList.remove('hidden'); 
+    document.getElementById('switch-to-new-student-btn').textContent = '新增學生 (切換)';
     
     document.getElementById('admin-account').readOnly = true;
 
@@ -392,7 +393,7 @@ window.addTaskRow = function(task = null) {
     // 項目名稱
     row.insertCell().innerHTML = `<input type="text" value="${taskName}" name="task-name-${taskId}" required>`;
     
-    // 狀態 (新增 '認證失敗')
+    // 狀態
     row.insertCell().innerHTML = `
         <select name="task-status-${taskId}">
             <option value="已認證" ${taskStatus === '已認證' ? 'selected' : ''}>已認證</option>
@@ -412,7 +413,7 @@ window.addTaskRow = function(task = null) {
     commentButton.style.cssText = 'width: auto; margin: 0; padding: 5px 10px; background-color: #6c757d; color: white;';
     commentButton.textContent = `留言 (${commentCount})`;
 
-    // 在新增模式下，留言按鈕不可用
+    // 在新增模式下，留言按鈕不可用 (因為還沒有學號)
     if (!editingStudentId) {
         commentButton.disabled = true;
     } else {
@@ -427,7 +428,7 @@ window.addTaskRow = function(task = null) {
     `;
 }
 
-/** 移除任務行 (image_9dff11.png) */
+/** 移除任務行 */
 window.removeTaskRow = function(button) {
     const row = button.closest('tr');
     if (confirm('你確定要移除此項目嗎？此操作將無法復原。')) {
@@ -435,7 +436,7 @@ window.removeTaskRow = function(button) {
     }
 }
 
-/** 提交學生表單 (新增/更新) (image_ab31d5.png) */
+/** 提交學生表單 (新增/更新) */
 document.getElementById('student-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -481,7 +482,7 @@ document.getElementById('student-form').addEventListener('submit', function(e) {
             comments: existingTask ? existingTask.comments : []
         });
         
-        // 更新 nextTaskId (以防使用者刪除了最大的 ID 後又新增)
+        // 更新 nextTaskId
         if (taskId >= nextTaskId) {
             nextTaskId = taskId + 1;
         }
@@ -501,7 +502,6 @@ document.getElementById('student-form').addEventListener('submit', function(e) {
     
     saveStudents();
     
-    // --- 修正與新增邏輯 ---
     if (isNew) {
         alert(`成功新增學生：${name} (${account})。`);
         // 新增成功後，清空並停留在新增模式
@@ -511,7 +511,6 @@ document.getElementById('student-form').addEventListener('submit', function(e) {
         alert(`成功更新學生：${name} (${account}) 的資料。`);
         // 更新成功後，重新渲染學生列表，並重新進入編輯模式 (保留編輯狀態)
         renderStudentList();
-        // 重新渲染任務列表，以反映潛在的狀態/留言變更
         editStudent(account); 
     }
 });
@@ -554,7 +553,7 @@ window.openCommentModal = function(accountId, taskId, mode) {
     
     if (!task) return;
 
-    // 根據當前角色確定標題 (image_ade184.png, image_adebf1.png)
+    // 根據當前角色確定標題
     const titleMode = mode === 'student' ? '學生端' : '教師端';
     document.getElementById('modal-title').textContent = `項目留言: ${task.name} - 留言記錄 (${titleMode})`;
     
