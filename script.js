@@ -1,4 +1,4 @@
-// script.js - 完整整合版 (已修正留言發送者顯示錯誤和新增/編輯按鈕顯示錯誤)
+// script.js - 完整整合版 (已修正按鈕顯示邏輯、新增導航面板)
 
 // --- 預設資料設定與變數 ---
 const TEACHER_PASSWORD = 'Teacher@admin';
@@ -111,8 +111,8 @@ function showAdminInterface() {
     document.getElementById('admin-container').classList.remove('hidden');
     
     renderStudentList();
-    // 進入管理介面時，預設切換到新增模式
-    switchToNewStudentMode(); 
+    // 進入管理介面時，切換到歡迎面板
+    showWelcomePanel(false); 
 }
 
 window.logout = function() {
@@ -290,30 +290,84 @@ function renderStudentList() {
 }
 
 /**
- * 切換到新增模式 (並清除表單)
+ * 顯示歡迎面板，並隱藏表單區塊
  * @param {boolean} showAlert - 是否顯示取消編輯的提醒
  */
-window.resetForm = function(showAlert = true) {
+window.showWelcomePanel = function(showAlert = true) {
     if (editingStudentId && showAlert) {
         if (!confirm('你確定要取消編輯嗎？所有未儲存的變更將會遺失。')) {
             return;
         }
     }
     
+    editingStudentId = null;
     document.getElementById('student-form').reset();
+    document.getElementById('tasks-table-admin tbody').innerHTML = ''; // 清空任務列表
+
+    // 顯示歡迎面板，隱藏表單面板
+    document.getElementById('admin-welcome-panel').classList.remove('hidden');
+    document.getElementById('student-form-panel').classList.add('hidden');
     
-    // 確保預設值被寫入
+    // 隱藏提示訊息
+    document.getElementById('list-tip-message').classList.add('hidden');
+    
+    // 移除列表閃爍動畫（如果存在）
+    document.getElementById('student-list-card').classList.remove('flash-animation');
+}
+
+/**
+ * 顯示學生表單區塊
+ * @param {string} mode - 'new' 或 'edit'
+ */
+window.showStudentForm = function(mode) {
+    // 隱藏歡迎面板，顯示表單面板
+    document.getElementById('admin-welcome-panel').classList.add('hidden');
+    document.getElementById('student-form-panel').classList.remove('hidden');
+    
+    // 確保重設表單
+    document.getElementById('student-form').reset();
     document.getElementById('admin-school').value = '永靖高工';
     document.getElementById('admin-class').value = '資訊二';
     document.getElementById('admin-email').value = '';
+    document.getElementById('tasks-table-admin tbody').innerHTML = '';
+    editingStudentId = null;
     
-    // 切換到新增模式
-    switchToNewStudentMode();
+    if (mode === 'new') {
+        switchToNewStudentMode(false); // 傳入 false 表示不顯示切換提示
+    }
+    // 如果是 'edit' 模式，則由 editStudent 函式處理
+}
+
+/** 列表閃爍動畫 */
+window.animateStudentList = function() {
+    const listCard = document.getElementById('student-list-card');
+    const tipMessage = document.getElementById('list-tip-message');
+    
+    // 顯示提示訊息
+    tipMessage.classList.remove('hidden');
+    
+    // 執行閃爍動畫
+    listCard.classList.add('flash-animation');
+    
+    // 3 秒後移除動畫和提示訊息
+    setTimeout(() => {
+        listCard.classList.remove('flash-animation');
+        tipMessage.classList.add('hidden');
+    }, 3000);
 }
 
 
 /** 修正：切換到新增模式 */
-window.switchToNewStudentMode = function() {
+window.switchToNewStudentMode = function(showAlert = true) {
+    if (editingStudentId && showAlert) {
+        if (!confirm('你確定要切換到新增模式嗎？目前編輯的資料將會遺失。')) {
+            return;
+        }
+    }
+    
+    // 確保表單顯示
+    showStudentForm('new'); 
+    
     editingStudentId = null;
     document.getElementById('student-form-title').textContent = '新增學生';
     
@@ -326,10 +380,6 @@ window.switchToNewStudentMode = function() {
     document.getElementById('switch-to-new-student-btn').classList.add('hidden'); 
 
     document.getElementById('admin-account').readOnly = false;
-    
-    // 清空任務列表 
-    document.getElementById('tasks-table-admin tbody').innerHTML = '';
-    // 預設新增一條空任務 (可選，這裡保持不新增，讓使用者自行點擊 + 新增項目)
 }
 
 /** 編輯學生 */
@@ -337,17 +387,19 @@ window.editStudent = function(accountId) {
     const student = students[accountId];
     if (!student) return;
 
+    // 先切換到表單面板
+    showStudentForm('edit'); 
+    
     editingStudentId = accountId;
     document.getElementById('student-form-title').textContent = `編輯學生: ${student.name}`;
     
     // 修正: 提交按鈕顯示為「更新學生資料」，確保顯示
     document.getElementById('submit-student-btn').classList.remove('hidden'); 
     document.getElementById('submit-student-btn').textContent = '更新學生資料';
-    document.getElementById('submit-student-btn').style.backgroundColor = 'var(--primary-color)'; 
+    document.getElementById('submit-student-btn').style.backgroundColor = '#3498db'; // 編輯使用藍色
     
     // 修正: 顯示切換到新增模式的按鈕
     document.getElementById('switch-to-new-student-btn').classList.remove('hidden'); 
-    document.getElementById('switch-to-new-student-btn').textContent = '新增學生 (切換)';
     
     document.getElementById('admin-account').readOnly = true;
 
@@ -504,9 +556,9 @@ document.getElementById('student-form').addEventListener('submit', function(e) {
     
     if (isNew) {
         alert(`成功新增學生：${name} (${account})。`);
-        // 新增成功後，清空並停留在新增模式
+        // 新增成功後，切換回歡迎面板
         renderStudentList(); // 更新列表
-        resetForm(false); 
+        showWelcomePanel(false); 
     } else {
         alert(`成功更新學生：${name} (${account}) 的資料。`);
         // 更新成功後，重新渲染學生列表，並重新進入編輯模式 (保留編輯狀態)
@@ -526,9 +578,9 @@ window.deleteStudent = function(account) {
         saveStudents();
         renderStudentList();
         
-        // 如果刪除了目前正在編輯的學生，則切換回新增模式
+        // 如果刪除了目前正在編輯的學生，則切換回歡迎面板
         if (editingStudentId === account) {
-            resetForm(false); 
+            showWelcomePanel(false); 
         }
         
         alert('學生資料已移除。');
