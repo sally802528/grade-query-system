@@ -1,66 +1,206 @@
-/* ... (保留原有的樣式) ... */
+body {
+    font-family: '微軟正黑體', 'Arial', sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* 讓內容垂直堆疊 */
+    align-items: center; /* 居中 */
+    min-height: 100vh;
+}
 
-/* 新增教師登入按鈕樣式 */
-#teacher-login-btn {
+h1, h2, h3 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* 核心容器樣式 */
+#login-container, #teacher-login-container, #result-container, #admin-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+#login-container, #teacher-login-container {
+    max-width: 400px;
+}
+
+#result-container {
+    max-width: 800px;
+}
+
+#admin-container {
+    max-width: 1000px;
+}
+
+/* 表單與輸入框 */
+label {
     display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+/* 按鈕樣式 */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    margin-top: 5px; /* 增加間隔 */
+}
+
+/* 主要按鈕 (藍色) */
+button[type="submit"], #teacher-login-btn {
+    background-color: #007bff;
+    color: white;
+}
+button[type="submit"]:hover, #teacher-login-btn:hover {
+    background-color: #0056b3;
+}
+
+/* 教師入口按鈕 (橘色) */
+#teacher-login-btn {
     width: 300px;
-    margin: 20px auto;
-    background-color: #ff9800; /* 橘色 */
+    background-color: #ff9800;
 }
 #teacher-login-btn:hover {
     background-color: #e68900;
 }
 
-/* 教師登入與管理容器 */
-#teacher-login-container {
-    max-width: 400px;
-    margin: 20px auto;
+
+/* 次要按鈕 (灰色) */
+.secondary-btn {
+    background-color: #6c757d;
+    color: white;
+    margin-left: 10px;
 }
-#admin-container {
-    max-width: 900px;
-    margin: 20px auto;
+.secondary-btn:hover {
+    background-color: #5a6268;
 }
 
-/* 管理介面表單樣式 */
-#student-form {
+/* 登出按鈕 (紅色) */
+.logout-btn {
+    background-color: #dc3545;
+    color: white;
+    margin-top: 20px;
+    width: 100%;
+}
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 成績查詢結果區塊 */
+.info-card, .grade-and-tasks {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+.info-card p {
+    line-height: 1.8;
+}
+
+/* 表格樣式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+/* 狀態顏色 */
+.status-completed {
+    color: green;
+    font-weight: bold;
+}
+
+.status-pending {
+    color: orange;
+    font-weight: bold;
+}
+
+/* --- 教師管理介面專用佈局 --- */
+
+.admin-card {
+    border: 1px solid #007bff;
     padding: 20px;
-    border: 1px dashed #ccc;
+    border-radius: 5px;
     margin-bottom: 20px;
 }
 
-#student-form h4 {
-    margin-top: 15px;
-    color: #4CAF50;
-}
-
-#student-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+/* 讓帳號和姓名輸入框在同一行 */
+.form-group-inline {
+    display: inline-block;
+    width: 49%; 
     box-sizing: border-box;
-    min-height: 100px;
 }
 
-/* 列表操作按鈕 */
+.form-group-inline:first-child {
+    padding-right: 10px;
+}
+
+/* 表單底部的動作按鈕 */
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end; /* 按鈕靠右對齊 */
+}
+
+.form-actions button {
+    width: auto;
+    margin-left: 10px;
+}
+
+/* 學生列表操作按鈕 */
 #student-list-table button {
     width: auto;
     padding: 5px 10px;
-    margin: 0;
+    margin: 3px;
     font-size: 14px;
 }
 
-#student-list-table button:first-child { /* 編輯按鈕 */
-    background-color: #007bff;
+#student-list-table button:first-of-type { /* 編輯 */
+    background-color: #17a2b8; /* 藍綠色 */
+    color: white;
 }
-#student-list-table button:last-child { /* 移除按鈕 */
-    background-color: #dc3545;
-}
-
-/* 登出按鈕 */
-#admin-container > button {
-    background-color: #6c757d;
-}
-#admin-container > button:hover {
-    background-color: #5a6268;
+#student-list-table button:last-of-type { /* 移除 */
+    background-color: #dc3545; /* 紅色 */
+    color: white;
 }
