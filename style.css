@@ -9,7 +9,7 @@ body, html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f2f5; 
     
-    /* 實現頁面中央置中 (使用 Flexbox) */
+    /* 修正重點：使用 Flexbox 實現頁面中央置中 */
     display: flex; 
     justify-content: center; /* 水平置中 */
     align-items: center; /* 垂直置中 */
@@ -20,7 +20,7 @@ body, html {
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-    width: 90%; /* 使用百分比讓它更具響應性 */
+    width: 90%; 
     max-width: 400px; /* 限制登入框的最大寬度 */
 }
 
@@ -31,8 +31,16 @@ body, html {
 }
 
 /* -------------------------------------- */
-/* 2. 表單欄位樣式 (與前版本相同) */
+/* 2. 表單欄位樣式 */
 /* -------------------------------------- */
+
+.login-form {
+    /* 修正重點：確保表單內元素可以水平置中 */
+    display: flex;
+    flex-direction: column;
+    /* 讓表單內的元素，如 input-group 和 button-group，靠左對齊（預設行為，輸入框會佔滿） */
+    align-items: stretch; 
+}
 
 .input-group {
     margin-bottom: 20px;
@@ -47,7 +55,7 @@ body, html {
 
 .login-form input[type="text"],
 .login-form input[type="password"] {
-    width: 100%;
+    width: 100%; /* 確保輸入框佔滿父容器寬度 */
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -61,21 +69,21 @@ body, html {
 }
 
 /* -------------------------------------- */
-/* 3. 按鈕區塊置中與樣式 (修正重點) */
+/* 3. 按鈕區塊置中與樣式 (核心修正) */
 /* -------------------------------------- */
 
 .button-group {
     margin-top: 30px;
-    /* 讓按鈕在容器內**水平置中** */
+    /* 修正重點：讓按鈕組本身在登入框內置中 */
     display: flex;
-    flex-direction: column; 
+    flex-direction: column; /* 保持垂直堆疊 */
     gap: 15px; 
-    align-items: center; /* **修正/精進**：確保按鈕組內部所有元素都居中 */
+    align-items: center; /* **關鍵**：將按鈕組作為一個整體，在表單容器內居中 */
 }
 
 .btn {
     width: 100%;
-    max-width: 350px; /* **修正/精進**：固定按鈕的最大寬度，使其在登入框內保持美觀比例 */
+    max-width: 350px; /* 限制按鈕的最大寬度 */
     padding: 12px;
     border: none;
     border-radius: 6px;
