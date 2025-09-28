@@ -1,4 +1,4 @@
-// script.js - 完整整合版 (已修復介面切換、新增狀態、留言優化)
+// script.js - 完整整合版 (已修正留言發送者名稱錯誤)
 
 // --- 預設資料設定與變數 ---
 const TEACHER_PASSWORD = 'Teacher@admin';
@@ -549,7 +549,9 @@ window.openCommentModal = function(accountId, taskId, role) {
     
     if (!task) return;
 
-    document.getElementById('modal-title').textContent = `${task.name} - 留言記錄 (${role === 'student' ? '學生端' : '教師端'})`;
+    // 根據當前角色確定標題
+    const titleRole = role === 'student' ? '學生端' : '教師端';
+    document.getElementById('modal-title').textContent = `項目留言: ${task.name} - 留言記錄 (${titleRole})`;
     
     // 渲染留言歷史
     renderCommentHistory(task.comments, role);
@@ -597,11 +599,13 @@ function renderCommentHistory(comments, role) {
         commentDiv.className = className;
         
         if (comment.isRecalled) {
-            commentDiv.innerHTML = '此留言已被學生撤回。';
+            // **修正發送者顯示錯誤**
+            const senderText = comment.sender === 'teacher' ? '教師' : '學生';
+            commentDiv.innerHTML = `**${senderText}** 撤回了此留言。`;
         } else if (comment.isBlocked) {
-            commentDiv.innerHTML = '此留言已被管理員屏蔽。';
+            commentDiv.innerHTML = '**此留言已被管理員屏蔽。**';
         } else {
-            // 正常顯示留言
+            // **修正發送者名稱的邏輯**
             let senderName = comment.sender === 'teacher' ? '教師 (管理員)' : '學生';
             
             let actionsHtml = '';
@@ -610,7 +614,7 @@ function renderCommentHistory(comments, role) {
             if (role === 'admin') {
                 // 教師可以撤回自己的留言，屏蔽學生的留言
                 if (comment.sender === 'teacher') {
-                    // 教師留言可以「撤回」或「編輯」 (這裡簡化為撤回)
+                    // 教師留言可以「撤回」 (這裡簡化為撤回)
                     actionsHtml += `<button class="secondary-btn" onclick="recallOrBlockComment('${currentTaskAccountId}', ${currentTaskId}, ${index}, 'recall')" title="撤回自己的留言">撤回</button>`;
                 } else {
                     // 學生留言可以「屏蔽」
@@ -654,7 +658,7 @@ function submitComment(accountId, taskId, role) {
     if (!task) return;
 
     task.comments.push({
-        sender: role, // 'student' or 'admin'
+        sender: role, // 'student' or 'teacher' (注意：在JS中，我使用'admin'代表教師端操作，但這裡儲存為'teacher'以符合語意)
         content: content,
         timestamp: getCurrentDateTime(),
         isRecalled: false,
@@ -664,18 +668,18 @@ function submitComment(accountId, taskId, role) {
     // 如果是教師留言，更新教師評論狀態
     if (role === 'admin') {
         task.teacherComment = `教師已於 ${getCurrentDateTime()} 留言。`;
-        // 更新管理介面的表格顯示
-        editStudent(accountId); 
+        // 更新管理介面的表格顯示 (如果modal是從admin開啟的)
+        if(editingStudentId) editStudent(accountId); 
     }
     
     saveStudents();
     commentInput.value = '';
     
     // 重新渲染歷史記錄
-    renderCommentHistory(task.comments, role);
+    renderCommentHistory(task.comments, currentMode);
     
     // 如果是學生端，需要更新結果頁面
-    if (role === 'student') {
+    if (currentMode === 'student') {
         displayStudentResult(student);
     }
 }
@@ -690,6 +694,12 @@ window.recallOrBlockComment = function(accountId, taskId, commentIndex, action) 
     const comment = task.comments[commentIndex];
 
     if (action === 'recall') {
+        // 學生只能撤回自己的最新留言
+        if (currentMode === 'student' && comment.sender === 'student' && commentIndex !== task.comments.length - 1) {
+             alert('學生只能撤回自己發送的最新一則留言。');
+             return;
+        }
+
         if (confirm('確定要撤回此留言嗎？')) {
             comment.isRecalled = true;
         } else {
@@ -704,10 +714,15 @@ window.recallOrBlockComment = function(accountId, taskId, commentIndex, action) 
     }
     
     saveStudents();
+    // 重新渲染留言歷史 (注意：這裡使用 currentMode 確保按鈕邏輯正確)
     renderCommentHistory(task.comments, currentMode);
     
+    // 如果是在管理介面操作，需要更新表格顯示
+    if (currentMode === 'admin' && editingStudentId) {
+        editStudent(accountId);
+    }
     // 如果是學生端，需要更新結果頁面
-    if (currentMode === 'student') {
+    else if (currentMode === 'student') {
         displayStudentResult(student);
     }
 }
