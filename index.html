@@ -6,7 +6,7 @@
     <title>成績與項目查詢系統</title>
     
     <style>
-        /* 全局與重置樣式 */
+        /* [略：基礎樣式設定] */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; }
         h1, h2, h3 { color: #2c3e50; font-weight: 600; }
         .hidden { display: none !important; }
@@ -26,8 +26,7 @@
             border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
             transition: border-color 0.3s;
         }
-        /* 修正 2: 限制留言輸入框不可水平拖曳 */
-        textarea { resize: vertical; max-height: 400px; } 
+        textarea { resize: vertical; max-height: 400px; } /* 留言輸入框 */
 
         input:focus, textarea:focus, select:focus { border-color: #3498db; outline: none; }
         .form-group-inline { display: flex; flex-wrap: wrap; margin: -10px; }
@@ -42,26 +41,11 @@
         .logout-btn:hover { background-color: #c0392b; }
         .comment-history-btn { margin-top: 0 !important; }
 
-        /* 表格結構 */
+        /* 表格結構 & 列表按鈕寬度修正 */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; } 
         th, td { border: 1px solid #ecf0f1; padding: 12px; text-align: left; vertical-align: middle; word-wrap: break-word; }
         th { background-color: #f2f4f6; color: #555; font-weight: 600; border-top: 2px solid #ddd; }
         
-        /* 針對特定表格進行欄位寬度固定 */
-        #student-view-table th:nth-child(1) { width: 35%; } 
-        #student-view-table th:nth-child(2) { width: 20%; }
-        #student-view-table th:nth-child(3) { width: 45%; }
-
-        #admin-tasks-table th:nth-child(1) { width: 25%; } 
-        #admin-tasks-table th:nth-child(2) { width: 15%; }
-        #admin-tasks-table th:nth-child(3) { width: 25%; } 
-        #admin-tasks-table th:nth-child(4) { width: 20%; } 
-        #admin-tasks-table th:nth-child(5) { width: 15%; } 
-
-        /* 修正 1: 學生列表按鈕過長 */
-        #student-list-table th:nth-child(1) { width: 30%; }
-        #student-list-table th:nth-child(2) { width: 30%; }
-        #student-list-table th:nth-child(3) { width: 40%; }
         #student-list-table td button { 
             margin-right: 5px; 
             margin-top: 0; 
@@ -70,40 +54,18 @@
             width: auto !important; 
         }
 
-        /* 狀態標籤顏色 */
-        .status-已認證 { color: #27ae60; font-weight: bold; }
-        .status-審核中 { color: #2980b9; font-weight: bold; }
-        .status-認證失敗 { color: #e74c3c; font-weight: bold; }
-        .status-未完成 { color: #f39c12; font-weight: bold; }
-
-        /* 彈窗樣式 */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background-color: white; padding: 30px; border-radius: 10px;
-            max-width: 650px; width: 90%; max-height: 85%; overflow-y: auto;
-            position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 28px; cursor: pointer; color: #7f8c8d; }
-        #modal-comments-list {
-            max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7f9fb;
-        }
-
-        /* 留言紀錄樣式 (修正 5, 6, 9) */
+        /* 留言紀錄樣式 (修正 1 & 2) */
         .comment-item { 
             position: relative; 
             padding: 10px; 
             margin-bottom: 8px; 
             border-radius: 4px; 
             word-wrap: break-word; 
-            padding-right: 80px; /* 為右側按鈕預留空間 */
+            padding-right: 80px; 
         }
         
         .comment-actions {
-            position: absolute; /* 靠右對齊容器 */
+            position: absolute; 
             top: 5px;
             right: 10px;
             display: flex;
@@ -111,21 +73,33 @@
         }
 
         .comment-actions button {
-            padding: 2px 5px !important; /* 縮小按鈕 */
-            font-size: 0.75em !important; /* 縮小字體 */
+            padding: 2px 5px !important; 
+            font-size: 0.75em !important; 
             margin-top: 0 !important;
             height: 25px;
             line-height: 15px;
         }
 
-        /* 修正 9: 屏蔽與撤回的訊息樣式 */
+        /* 修正 1 & 2 樣式 */
         .comment-recalled, .comment-blocked {
             color: #888;
             font-style: italic;
             border-left: 3px solid #f39c12; 
-            padding-left: 10px;
-            display: block; /* 讓追溯訊息獨立一行 */
+            padding: 5px 0 5px 10px; 
+            display: block; 
             margin-top: 5px;
+            background-color: #fff2cc; 
+        }
+        
+        /* 修正 3: 表單操作按鈕排版 */
+        .form-actions {
+             display: flex;
+             gap: 10px; 
+             margin-top: 15px;
+        }
+        .form-actions button {
+             width: auto;
+             flex-grow: 1; 
         }
         
     </style>
@@ -184,7 +158,7 @@
                 
                 <div class="form-group-inline">
                     <div style="width: 50%;">
-                         <label for="admin-account">學號 (唯一)：</label>
+                        <label for="admin-account">學號 (唯一)：</label>
                         <input type="text" id="admin-account" required> 
                     </div>
                     <div style="width: 50%;">
@@ -224,6 +198,7 @@
 
                 <div class="form-actions">
                     <button type="submit" id="form-submit-btn" class="primary-btn">新增學生</button>
+                    <button type="button" onclick="switchToNewStudentMode()" class="primary-btn" style="background-color: #2ecc71;">新增學生 (切換)</button>
                     <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
                 </div>
             </form>
