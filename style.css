@@ -1,121 +1,66 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+/* ... (保留原有的樣式) ... */
+
+/* 新增教師登入按鈕樣式 */
+#teacher-login-btn {
+    display: block;
+    width: 300px;
+    margin: 20px auto;
+    background-color: #ff9800; /* 橘色 */
+}
+#teacher-login-btn:hover {
+    background-color: #e68900;
 }
 
-h1, h2, h3 {
-    color: #007bff;
-    text-align: center;
-}
-
-/* 登入容器 */
-#login-container, .info-card, .grade-and-tasks {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
+/* 教師登入與管理容器 */
+#teacher-login-container {
     max-width: 400px;
+    margin: 20px auto;
+}
+#admin-container {
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+/* 管理介面表單樣式 */
+#student-form {
+    padding: 20px;
+    border: 1px dashed #ccc;
     margin-bottom: 20px;
 }
 
-/* 表單樣式 */
-label {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
+#student-form h4 {
+    margin-top: 15px;
+    color: #4CAF50;
 }
 
-input[type="text"], input[type="password"] {
+#student-form textarea {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+    min-height: 100px;
 }
 
-button {
+/* 列表操作按鈕 */
+#student-list-table button {
+    width: auto;
+    padding: 5px 10px;
+    margin: 0;
+    font-size: 14px;
+}
+
+#student-list-table button:first-child { /* 編輯按鈕 */
     background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 20px;
-    width: 100%;
 }
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.error {
-    color: red;
-    margin-top: 10px;
-    text-align: center;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* 成績表格樣式 */
-#result-container {
-    max-width: 800px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
-th {
-    background-color: #f2f2f2;
-    color: #333;
-}
-
-/* 狀態顏色 */
-.status-completed {
-    color: green;
-    font-weight: bold;
-}
-
-.status-pending {
-    color: orange;
-    font-weight: bold;
-}
-
-/* 基本資料卡片 */
-.info-card p {
-    line-height: 1.8;
-}
-
-/* 調整登出按鈕 */
-#result-container > button {
-    margin-top: 30px;
+#student-list-table button:last-child { /* 移除按鈕 */
     background-color: #dc3545;
 }
 
-#result-container > button:hover {
-    background-color: #c82333;
+/* 登出按鈕 */
+#admin-container > button {
+    background-color: #6c757d;
 }
-
-/* 確保表格和卡片在結果頁面能並排顯示或至少佔滿寬度 */
-.grade-and-tasks {
-    max-width: none;
-    margin-top: 20px;
+#admin-container > button:hover {
+    background-color: #5a6268;
 }
