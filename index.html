@@ -6,80 +6,81 @@
     <title>成績與項目查詢系統</title>
     
     <style>
-        /* 基礎排版與功能樣式 */
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
-        h1, h2, h3 { color: #333; }
+        /* 全局與重置樣式 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; }
+        h1, h2, h3 { color: #2c3e50; font-weight: 600; }
         .hidden { display: none !important; }
-        .error { color: red; }
+        .error { color: #e74c3c; font-weight: bold; margin-top: 10px; }
         
-        /* 容器與卡片 */
+        /* 容器與卡片樣式 */
         #login-container, #teacher-login-container, #admin-container, #result-container {
-            max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px; margin: 40px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .admin-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; }
+        .admin-card { border: 1px solid #e0e6ed; padding: 20px; margin-bottom: 25px; border-radius: 8px; background-color: #f9fbfd; }
+        .info-card { padding: 15px; border: 1px solid #dcdfe6; border-radius: 5px; margin-top: 15px; background-color: #ecf0f1; }
 
-        /* 按鈕基礎樣式 */
-        .primary-btn { background-color: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: background-color 0.3s; }
-        .primary-btn:hover { background-color: #0056b3; }
-        .secondary-btn { background-color: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: background-color 0.3s; }
-        .secondary-btn:hover { background-color: #5a6268; }
-        .logout-btn { background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; width: 100%; transition: background-color 0.3s; }
-        .logout-btn:hover { background-color: #c82333; }
-        
-        /* 表格結構強化：確保欄位不會擠壓 */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; } /* 關鍵：使用 fixed 確保寬度固定 */
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; word-wrap: break-word; }
-        th { background-color: #f8f9fa; }
-        
-        /* 針對特定表格進行欄位寬度固定，以修正介面問題 */
-        /* 學生查詢結果表格 (3 欄) */
-        #student-view-table th:nth-child(1) { width: 35%; } /* 項目 */
-        #student-view-table th:nth-child(2) { width: 20%; } /* 狀態 */
-        #student-view-table th:nth-child(3) { width: 45%; } /* 留言 / 操作 */
+        /* 表單元素樣式 */
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%; padding: 10px 12px; margin: 5px 0 15px 0; display: inline-block;
+            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { border-color: #3498db; outline: none; }
+        .form-group-inline { display: flex; flex-wrap: wrap; margin: -10px; }
+        .form-group-inline > div { padding: 10px; box-sizing: border-box; }
 
-        /* 教師編輯表格 (5 欄) */
+        /* 按鈕樣式 */
+        .primary-btn { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px; transition: background-color 0.3s; }
+        .primary-btn:hover { background-color: #2980b9; }
+        .secondary-btn { background-color: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px; margin-right: 10px; transition: background-color 0.3s; }
+        .secondary-btn:hover { background-color: #7f8c8d; }
+        .logout-btn { background-color: #e74c3c; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 25px; width: 100%; transition: background-color 0.3s; }
+        .logout-btn:hover { background-color: #c0392b; }
+        .comment-history-btn { margin-top: 0 !important; }
+
+        /* 表格結構 (修正錯位關鍵) */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; } 
+        th, td { border: 1px solid #ecf0f1; padding: 12px; text-align: left; vertical-align: middle; word-wrap: break-word; }
+        th { background-color: #f2f4f6; color: #555; font-weight: 600; border-top: 2px solid #ddd; }
+        
+        /* 針對特定表格進行欄位寬度固定 */
+        #student-view-table th:nth-child(1) { width: 35%; } 
+        #student-view-table th:nth-child(2) { width: 20%; }
+        #student-view-table th:nth-child(3) { width: 45%; }
+
         #admin-tasks-table th:nth-child(1) { width: 25%; } /* 項目名稱 */
         #admin-tasks-table th:nth-child(2) { width: 15%; } /* 狀態 */
-        #admin-tasks-table th:nth-child(3) { width: 30%; } /* 教師留言狀態 */
-        #admin-tasks-table th:nth-child(4) { width: 15%; } /* 留言紀錄 */
+        #admin-tasks-table th:nth-child(3) { width: 25%; } /* 教師留言狀態 */
+        #admin-tasks-table th:nth-child(4) { width: 20%; } /* 留言紀錄 */
         #admin-tasks-table th:nth-child(5) { width: 15%; } /* 操作 */
 
-        /* 內容樣式 */
-        .info-card { padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-top: 15px; }
-        input[type="text"], input[type="password"], textarea, select {
-            width: 100%; padding: 8px; margin: 5px 0 10px 0; display: inline-block;
-            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
-        }
-        .form-group-inline { display: flex; flex-wrap: wrap; margin: -5px; }
-        .form-group-inline > div { padding: 5px; box-sizing: border-box; }
+        #student-list-table th:nth-child(1) { width: 30%; }
+        #student-list-table th:nth-child(2) { width: 30%; }
+        #student-list-table th:nth-child(3) { width: 40%; }
+        #student-list-table td button { margin-right: 5px; margin-top: 0; padding: 6px 10px; font-size: 0.9em; }
 
         /* 狀態標籤顏色 */
-        .status-已認證 { color: green; font-weight: bold; }
-        .status-審核中 { color: blue; font-weight: bold; }
-        .status-認證失敗 { color: red; font-weight: bold; }
-        .status-未完成 { color: orange; font-weight: bold; }
+        .status-已認證 { color: #27ae60; font-weight: bold; }
+        .status-審核中 { color: #2980b9; font-weight: bold; }
+        .status-認證失敗 { color: #e74c3c; font-weight: bold; }
+        .status-未完成 { color: #f39c12; font-weight: bold; }
 
-        /* 彈窗樣式 */
+        /* 彈窗樣式 (保持前一版，確保功能可用) */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 1000;
             display: flex; justify-content: center; align-items: center;
         }
         .modal-content {
-            background-color: white; padding: 20px; border-radius: 8px;
-            max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto;
-            position: relative;
+            background-color: white; padding: 30px; border-radius: 10px;
+            max-width: 650px; width: 90%; max-height: 85%; overflow-y: auto;
+            position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 24px; cursor: pointer; }
-        .comment-item { 
-            border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;
-            overflow: hidden; 
-        }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 28px; cursor: pointer; color: #7f8c8d; }
         #modal-comments-list {
-            max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding: 5px; border: 1px solid #ccc;
+            max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7f9fb;
         }
-        .comment-history-btn { margin-top: 0 !important; }
-        .task-item-input, .task-status-select { margin: 0; }
     </style>
 </head>
 <body>
@@ -87,24 +88,33 @@
     <div id="login-container">
         <h1>成績查詢登入</h1>
         <form id="login-form">
-            <label for="school">學校名稱：</label>
-            <input type="text" id="school" name="school" required value="奇美高中">
-            
-            <label for="class">班級：</label>
-            <input type="text" id="class" name="class" required value="二年甲班">
-
-            <label for="account">帳號：</label>
-            <input type="text" id="account" name="account" required>
-
-            <label for="password">密碼 (Qimei@admin)：</label>
-            <input type="password" id="password" name="password" required>
+            <div class="form-group-inline">
+                <div style="width: 50%;">
+                    <label for="school">學校名稱：</label>
+                    <input type="text" id="school" name="school" required value="奇美高中">
+                </div>
+                <div style="width: 50%;">
+                    <label for="class">班級：</label>
+                    <input type="text" id="class" name="class" required value="二年甲班">
+                </div>
+                <div style="width: 50%;">
+                    <label for="account">帳號：</label>
+                    <input type="text" id="account" name="account" required>
+                </div>
+                <div style="width: 50%;">
+                    <label for="password">密碼 (Qimei@admin)：</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+            </div>
             
             <button type="submit" class="primary-btn">登入查詢</button>
             <p id="error-message" class="error"></p>
         </form>
     </div>
     
-    <button id="teacher-login-btn" class="primary-btn" style="background-color: orange;">我是教師，點擊登入管理介面</button>
+    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+        <button id="teacher-login-btn" class="primary-btn" style="background-color: #f39c12;">我是教師，點擊登入管理介面</button>
+    </div>
 
     <div id="teacher-login-container" class="hidden">
         <h2>教師管理員登入</h2>
@@ -121,13 +131,13 @@
         <h2>學生資料管理介面</h2>
 
         <div class="admin-card">
-            <h3>學生資料編輯介面</h3>
+            <h3>新增 / 編輯學生</h3>
             <form id="student-form">
                 <input type="hidden" id="student-original-account">
                 
                 <div class="form-group-inline">
                     <div style="width: 50%;">
-                        <label for="admin-account">學號 (帳號)：</label>
+                        <label for="admin-account">帳號 (唯一)：</label>
                         <input type="text" id="admin-account" required> 
                     </div>
                     <div style="width: 50%;">
