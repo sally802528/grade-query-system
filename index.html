@@ -36,9 +36,9 @@
                 <label for="admin-password">管理密碼 (Teacher@admin)：</label>
                 <input type="password" id="admin-password" required>
                 <p id="admin-login-error" class="error hidden">管理密碼錯誤。</p>
-                <button type="submit" class="primary-btn" style="max-width: 100%;">登入管理</button>
+                <button type="submit" class="primary-btn" style="max-width: 100%; background-color: #007bff;">登入管理</button>
             </form>
-            <button type="button" class="secondary-btn" onclick="showStudentLogin()">返回學生登入</button>
+            <button type="button" class="secondary-btn" onclick="showStudentLogin()" style="background-color: #6c757d;">返回學生登入</button>
         </div>
 
         <div id="result-container" class="hidden">
@@ -81,7 +81,7 @@
                 <form id="student-form">
                     <div class="form-group-inline">
                         <div style="flex: 1 1 45%;">
-                            <label for="admin-account">帳號 (唯一)：</label>
+                            <label for="admin-account">學號 (唯一)：</label>
                             <input type="text" id="admin-account" placeholder="輸入學號" required>
                         </div>
                         <div style="flex: 1 1 45%;">
@@ -123,8 +123,8 @@
                     
                     <div class="form-actions">
                         <button type="submit" id="submit-student-btn" class="primary-btn">更新學生資料</button>
-                        <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn">新增學生 (切換)</button>
-                        <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
+                        <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn" style="background-color: #2ecc71;">新增學生 (切換)</button>
+                        <button type="button" onclick="resetForm()" class="secondary-btn" style="background-color: #6c757d;">重設/取消編輯</button>
                     </div>
                 </form>
             </div>
@@ -153,14 +153,14 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <h3 id="modal-title">項目留言</h3>
             
-            <div id="comment-history" style="max-height: 300px; overflow-y: auto; padding-right: 15px;">
+            <div id="comment-history" class="comment-history-area">
                 </div>
 
-            <div id="new-comment-area" style="margin-top: 20px;">
+            <div id="new-comment-area" class="new-comment-area-wrapper">
                 <h4 style="margin-bottom: 10px;">新增留言</h4>
                 <textarea id="comment-input" placeholder="輸入您的留言..." rows="4"></textarea>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" id="submit-comment-btn" class="primary-btn">提交留言</button>
+                    <button type="button" id="submit-comment-btn" class="primary-btn" style="max-width: 100%; margin: 0; background-color: #007bff;">提交留言</button>
                 </div>
             </div>
             
