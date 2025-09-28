@@ -7,6 +7,7 @@ const STATUS_OPTIONS = ["已認證", "認證失敗", "審核中", "未完成"];
 let currentTaskAccount = null;
 let currentTaskItem = null;
 let isAdminMode = false; // 追蹤是否為教師模式
+let students = {}; // 初始為空物件，等待 loadStudentData 執行
 
 // --- 輔助函數：資料持久化 ---
 const DEFAULT_STUDENTS = {
@@ -36,13 +37,14 @@ function loadStudentData() {
             return data;
         }
     } catch (e) { console.error("Failed to parse stored data, using default.", e); }
+    // 如果沒有存儲的資料或解析失敗，使用預設資料並儲存
     saveStudentData(DEFAULT_STUDENTS);
     return DEFAULT_STUDENTS;
 }
 function saveStudentData(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
-let students = {}; // 初始為空物件，等待 loadStudentData 執行
+
 
 // --- 學生查詢介面邏輯 ---
 
@@ -87,6 +89,7 @@ function renderTasks(tasks, account) {
         const statusCell = row.insertCell();
         const statusSpan = document.createElement('span');
         statusSpan.textContent = data.status;
+        // 確保 class name 只有中文和英文
         statusSpan.className = 'status-' + data.status.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
         statusCell.appendChild(statusSpan);
 
@@ -197,7 +200,6 @@ window.submitStudentCommentFromModal = function() {
         
         document.getElementById('modal-new-student-comment').value = '';
         showCommentModal(currentTaskAccount, currentTaskItem);
-        // 確保學生登入介面在留言後更新狀態
         if (!isAdminMode) {
              renderTasks(students[currentTaskAccount].tasks, currentTaskAccount);
         }
@@ -244,16 +246,19 @@ function handleTeacherLoginClick() {
     document.getElementById('teacher-error-message').textContent = ''; 
 }
 
+/** 修正: 確保能正確從教師登入頁返回學生登入頁面，修復按鈕失效問題 */
 window.hideTeacherLogin = function() {
+    document.getElementById('teacher-login-container').classList.add('hidden');
     document.getElementById('login-container').classList.remove('hidden');
     document.getElementById('teacher-login-btn').classList.remove('hidden');
-    document.getElementById('teacher-login-container').classList.add('hidden');
     document.getElementById('teacher-login-form').reset();
 }
 
+/** 修正: 確保教師登出後，正確顯示學生登入頁面，修復空白畫面問題 */
 window.teacherLogout = function() {
     isAdminMode = false;
     document.getElementById('admin-container').classList.add('hidden');
+    // 呼叫修正後的 hideTeacherLogin() 確保返回學生登入介面
     hideTeacherLogin(); 
 }
 
@@ -376,15 +381,17 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     row.setAttribute('data-pending-review', task.pendingReview.toString());
 }
 
-document.getElementById('add-task-btn').addEventListener('click', () => {
+
+function handleAddTaksClick() {
     const currentAccount = document.getElementById('new-account').value.trim();
     addTaskRow(undefined, currentAccount);
-});
+}
 
 window.resetForm = function() {
     document.getElementById('admin-tasks-tbody').innerHTML = '';
     document.getElementById('student-original-account').value = '';
-    document.getElementById('student-form').reset();
+    document.getElementById('new-account').value = ''; // 確保清除帳號欄位
+    document.getElementById('new-name').value = ''; // 確保清除姓名欄位
     document.getElementById('form-submit-btn').textContent = '新增學生';
 }
 
@@ -447,8 +454,11 @@ function handleStudentFormSubmit(event) {
 }
 
 
+/** 修正: 確保能正確顯示學生列表，修復舊學生消失和列表空白問題 */
 function displayStudentList() {
     const tbody = document.querySelector('#student-list-table tbody');
+    if (!tbody) return; // 安全檢查
+
     tbody.innerHTML = ''; 
 
     for (const account in students) {
@@ -502,4 +512,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('teacher-login-btn').addEventListener('click', handleTeacherLoginClick);
     document.getElementById('teacher-login-form').addEventListener('submit', handleTeacherLoginFormSubmit);
     document.getElementById('student-form').addEventListener('submit', handleStudentFormSubmit);
+    
+    // 綁定 + 新增項目 按鈕的點擊事件
+    document.getElementById('add-task-btn').addEventListener('click', handleAddTaksClick);
+    
+    // 確保教師登入頁面的「返回學生登入」按鈕使用修正後的函數
+    // 假設 index.html 中該按鈕是 <button onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
 });
