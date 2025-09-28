@@ -30,7 +30,6 @@
     
     <button id="teacher-login-btn">我是教師，點擊登入管理介面</button>
 
-
     <div id="teacher-login-container" class="hidden">
         <h2>教師管理員登入</h2>
         <form id="teacher-login-form">
@@ -103,6 +102,7 @@
 
     <div id="result-container" class="hidden">
         <h2>查詢結果</h2>
+        
         <div class="info-card">
             <h3>學生基本資料</h3>
             <p>學號：<span id="display-student-id"></span></p>
@@ -117,24 +117,14 @@
             <table id="student-view-table">
                 <thead>
                     <tr>
-                        <th style="width: 30%;">項目</th>
-                        <th style="width: 15%;">狀態</th>
-                        <th style="width: 35%;">教師留言</th>
-                        <th style="width: 20%;">學生留言</th>
+                        <th style="width: 35%;">項目</th>
+                        <th style="width: 20%;">狀態</th>
+                        <th style="width: 45%;">留言 / 操作</th>
                     </tr>
                 </thead>
                 <tbody id="task-list">
                     </tbody>
             </table>
-        </div>
-
-        <div id="student-comment-area" class="info-card">
-            <h3>新增學生留言 (給教師)</h3>
-            <select id="comment-task-select">
-                <option value="">請選擇要留言的項目</option>
-            </select>
-            <textarea id="new-student-comment" rows="3" placeholder="輸入您的留言..."></textarea>
-            <button onclick="submitStudentComment()">提交留言</button>
         </div>
         
         <button onclick="logout()" class="logout-btn">登出查詢</button>
@@ -143,8 +133,21 @@
     <div id="comment-history-modal" class="modal hidden">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h4>[<span id="modal-task-name"></span>] 留言歷史</h4>
-            <div id="modal-comments-list"></div>
+            <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
+            
+            <div id="modal-comments-list">
+                </div>
+            
+            <div id="modal-student-comment-area" class="info-card">
+                <h5>新增留言 (給教師)</h5>
+                <textarea id="modal-new-student-comment" rows="3" placeholder="輸入您的留言..."></textarea>
+                <button onclick="submitStudentCommentFromModal()" class="primary-btn">提交留言</button>
+            </div>
+            
+            <div id="modal-submission-area">
+                <p class="error-message" id="modal-submission-message"></p>
+                <button onclick="confirmSubmissionFromModal()" class="primary-btn submission-btn">提交完成/重新審核</button>
+            </div>
         </div>
     </div>
 
