@@ -1,1 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成績與項目查詢系統</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div id="login-container">
+        <h1>成績查詢登入</h1>
+        <form id="login-form">
+            <label for="school">學校名稱：</label>
+            <input type="text" id="school" name="school" required value="奇美高中">
+            
+            <label for="class">班級：</label>
+            <input type="text" id="class" name="class" required value="二年甲班">
+
+            <label for="account">帳號：</label>
+            <input type="text" id="account" name="account" required>
+
+            <label for="password">密碼：</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit">登入查詢</button>
+            <p id="error-message" class="error"></p>
+        </form>
+    </div>
+
+    <div id="result-container" class="hidden">
+        <h2>查詢結果</h2>
+
+        <div class="info-card">
+            <h3>學生基本資料</h3>
+            <p>學號：<span id="display-student-id">S123****</span></p>
+            <p>姓名：<span id="display-name">林**恩</span> (部分遮蔽)</p>
+            <p>學校：<span id="display-school"></span></p>
+            <p>班級：<span id="display-class"></span></p>
+            <p>電子郵件：<span id="display-email">li**g@qimei.edu.tw</span></p>
+        </div>
+
+        <div class="grade-and-tasks">
+            <h3>學期成績與活動完成度</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>狀態</th>
+                    </tr>
+                </thead>
+                <tbody id="task-list">
+                    </tbody>
+            </table>
+        </div>
+        
+        <button onclick="logout()">登出</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
