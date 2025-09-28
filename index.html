@@ -65,9 +65,9 @@
         #student-list-table td button { 
             margin-right: 5px; 
             margin-top: 0; 
-            padding: 6px 12px; /* 統一按鈕大小 */
+            padding: 6px 12px; 
             font-size: 0.9em; 
-            width: auto !important; /* 確保按鈕不會因為 .logout-btn 寬度繼承 */
+            width: auto !important; 
         }
 
         /* 狀態標籤顏色 */
@@ -91,6 +91,43 @@
         #modal-comments-list {
             max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7f9fb;
         }
+
+        /* 留言紀錄樣式 (修正 5, 6, 9) */
+        .comment-item { 
+            position: relative; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border-radius: 4px; 
+            word-wrap: break-word; 
+            padding-right: 80px; /* 為右側按鈕預留空間 */
+        }
+        
+        .comment-actions {
+            position: absolute; /* 靠右對齊容器 */
+            top: 5px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .comment-actions button {
+            padding: 2px 5px !important; /* 縮小按鈕 */
+            font-size: 0.75em !important; /* 縮小字體 */
+            margin-top: 0 !important;
+            height: 25px;
+            line-height: 15px;
+        }
+
+        /* 修正 9: 屏蔽與撤回的訊息樣式 */
+        .comment-recalled, .comment-blocked {
+            color: #888;
+            font-style: italic;
+            border-left: 3px solid #f39c12; 
+            padding-left: 10px;
+            display: block; /* 讓追溯訊息獨立一行 */
+            margin-top: 5px;
+        }
+        
     </style>
 </head>
 <body>
