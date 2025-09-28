@@ -36,29 +36,42 @@
             <label for="teacher-password">管理密碼 (Teacher@admin)：</label>
             <input type="password" id="teacher-password" name="teacher-password" required>
             <button type="submit">登入管理</button>
+            <button type="button" onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
             <p id="teacher-error-message" class="error"></p>
         </form>
-        <button onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
     </div>
 
     <div id="admin-container" class="hidden">
         <h2>學生資料管理介面</h2>
 
         <div class="admin-card">
-            <h3>新增 / 編輯學生</h3>
+            <h3>學生資料編輯介面</h3>
             <form id="student-form">
                 <input type="hidden" id="student-original-account">
                 
-                <div class="form-group-inline">
-                    <label for="new-account">帳號 (唯一)：</label>
-                    <input type="text" id="new-account" required>
+                <div class="form-group-inline" style="width: 100%; display: flex; flex-wrap: wrap;">
+                    <div style="width: 50%; padding-right: 10px; box-sizing: border-box;">
+                        <label for="admin-account">學號 (帳號)：</label>
+                        <input type="text" id="admin-account" required>
+                    </div>
+                    <div style="width: 50%; padding-left: 10px; box-sizing: border-box;">
+                        <label for="admin-name">姓名 (遮擋前)：</label>
+                        <input type="text" id="admin-name" required>
+                    </div>
+                    <div style="width: 50%; padding-right: 10px; box-sizing: border-box;">
+                        <label for="admin-school">學校名稱：</label>
+                        <input type="text" id="admin-school" required>
+                    </div>
+                    <div style="width: 50%; padding-left: 10px; box-sizing: border-box;">
+                        <label for="admin-class">班級：</label>
+                        <input type="text" id="admin-class" required>
+                    </div>
+                    <div style="width: 100%;">
+                         <label for="admin-email">電子郵件：</label>
+                        <input type="text" id="admin-email" placeholder="li**g@qimei.edu.tw">
+                    </div>
                 </div>
-                
-                <div class="form-group-inline">
-                    <label for="new-name">姓名 (遮擋前)：</label>
-                    <input type="text" id="new-name" required>
-                </div>
-                
+
                 <h4>活動/成績項目管理</h4>
                 <table id="admin-tasks-table">
                     <thead>
@@ -66,7 +79,8 @@
                             <th style="width: 25%;">項目名稱</th>
                             <th style="width: 15%;">狀態</th>
                             <th style="width: 35%;">教師留言</th>
-                            <th style="width: 15%;">留言紀錄</th> <th style="width: 10%;">操作</th>
+                            <th style="width: 15%;">留言紀錄</th> 
+                            <th style="width: 10%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="admin-tasks-tbody">
@@ -109,7 +123,7 @@
             <p>姓名：<span id="display-name"></span></p>
             <p>學校：<span id="display-school"></span></p>
             <p>班級：<span id="display-class"></span></p>
-            <p>電子郵件：li**g@qimei.edu.tw</p>
+            <p>電子郵件：<span id="display-email"></span></p>
         </div>
 
         <div class="grade-and-tasks">
@@ -135,8 +149,7 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
             
-            <div id="modal-comments-list">
-                </div>
+            <div id="modal-comments-list"></div>
             
             <div id="modal-student-comment-area" class="info-card">
                 <h5>新增留言 (給教師)</h5>
