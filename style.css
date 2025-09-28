@@ -112,7 +112,7 @@ button:active {
 #teacher-login-btn:hover { background-color: #e67e22 !important; }
 
 /* 錯誤提示 */
-.hidden { display: none; }
+.hidden { display: none !important; }
 .error {
     color: #e74c3c;
     margin-top: -10px;
@@ -157,8 +157,9 @@ th {
 tr:last-child td {
     border-bottom: none;
 }
+/* 新增認證失敗狀態的樣式 */
 .status-已認證 { color: #2ecc71; font-weight: bold; }
-.status-認證失敗 { color: #e74c3c; font-weight: bold; }
+.status-認證失敗 { color: #e74c3c; font-weight: bold; } /* 紅色 */
 .status-審核中 { color: #f39c12; font-weight: bold; }
 .status-未完成 { color: #3498db; font-weight: bold; }
 
@@ -184,13 +185,6 @@ tr:last-child td {
     max-width: none; /* 讓這組按鈕平均分配空間 */
 }
 
-#switch-to-new-student-btn {
-    background-color: #2ecc71; 
-    color: white;
-}
-#switch-to-new-student-btn:hover {
-    background-color: #27ae60;
-}
 #add-task-btn {
     background-color: #bdc3c7; 
     color: #34495e; 
@@ -247,6 +241,26 @@ tr:last-child td {
     right: 20px;
     cursor: pointer;
 }
+/* 留言區塊寬度相等 */
+.comment-history-area {
+    max-height: 300px; 
+    overflow-y: auto; 
+    padding-right: 15px;
+    margin-bottom: 20px;
+    /* 確保其寬度與下面的 textarea 一致 */
+    box-sizing: border-box; 
+    width: 100%; 
+}
+
+.new-comment-area-wrapper {
+    margin-top: 20px;
+    width: 100%; /* 確保與上方歷史紀錄寬度相等 */
+}
+#comment-input {
+    max-width: 100%; /* 取消 max-width 限制，使其佔滿 modal-content 寬度 */
+    margin-bottom: 10px;
+}
+
 
 /* 留言樣式 */
 .comment {
@@ -257,9 +271,23 @@ tr:last-child td {
     position: relative;
 }
 .comment strong {
-    font-size: 13px;
-    opacity: 0.8;
+    font-size: 14px;
+    opacity: 0.9;
 }
+/* 調整使用者名與時間位置 */
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.comment-header .comment-actions {
+    margin-left: auto; /* 將操作按鈕推到右側 */
+}
+.comment-header .comment-actions button {
+    margin: 0 0 0 5px;
+}
+
 .comment p {
     margin: 5px 0 0;
     font-size: 15px;
@@ -273,7 +301,7 @@ tr:last-child td {
     background-color: #e9f8f4; 
     border-left: 6px solid #2ecc71; /* 綠色邊框 */
 }
-.comment-recalled, .comment-blocked {
+.comment-recalled {
     background-color: #fff8e6; /* 淺黃色 */
     color: #8a6d3b;
     border-left-color: #f39c12;
@@ -285,11 +313,25 @@ tr:last-child td {
     background-color: #fcebeb; /* 淺紅色 */
     color: #c0392b;
     border-left-color: #e74c3c;
+    text-align: center;
+    font-style: italic;
+    font-weight: bold;
 }
 .comment-actions button {
     width: auto;
     padding: 3px 8px;
     font-size: 0.75em;
-    margin: 0 0 0 5px; 
     vertical-align: top;
+}
+
+/* 學生端操作按鈕樣式 */
+.student-action-btn {
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    margin-top: 0;
+    width: auto;
+}
+.student-action-btn.re-submit {
+    background-color: #f39c12; /* 重新提交使用橙色 */
 }
