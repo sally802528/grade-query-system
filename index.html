@@ -90,62 +90,83 @@
             </div>
             
             <div class="admin-content">
+                
                 <div class="card form-card">
-                    <h2 id="student-form-title">新增學生</h2>
-                    <form id="student-form">
-                        <div class="input-row">
-                             <div class="input-group">
-                                <label for="admin-account">學號 (唯一)：</label>
-                                <input type="text" id="admin-account" placeholder="輸入學號" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="admin-name">姓名 (遮擋前)：</label>
-                                <input type="text" id="admin-name" placeholder="輸入學生全名" required>
-                            </div>
+                    
+                    <div id="admin-welcome-panel">
+                        <h2>歡迎使用七美科技 成績登入系統</h2>
+                        <p style="margin-top: 20px; margin-bottom: 30px; color: #555;">請選擇您的操作項目：</p>
+                        <div class="button-group-vertical">
+                            <button type="button" class="primary-btn" onclick="animateStudentList()">
+                                查看/編輯學生資料
+                            </button>
+                            <button type="button" class="success-btn" style="margin-top: 15px;" onclick="showStudentForm('new')">
+                                新增學生
+                            </button>
                         </div>
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="admin-school">學校名稱：</label>
-                                <input type="text" id="admin-school" value="永靖高工" required>
+                        <p id="list-tip-message" class="hidden" style="margin-top: 20px; color: #e67e22; font-weight: bold;">
+                             請點擊右側學生列表中的「編輯」按鈕查看詳情。
+                        </p>
+                    </div>
+
+                    <div id="student-form-panel" class="hidden">
+                        <h2 id="student-form-title">新增學生</h2>
+                        <form id="student-form">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="admin-account">學號 (唯一)：</label>
+                                    <input type="text" id="admin-account" placeholder="輸入學號" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="admin-name">姓名 (遮擋前)：</label>
+                                    <input type="text" id="admin-name" placeholder="輸入學生全名" required>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label for="admin-class">班級：</label>
-                                <input type="text" id="admin-class" value="資訊二" required>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="admin-school">學校名稱：</label>
+                                    <input type="text" id="admin-school" value="永靖高工" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="admin-class">班級：</label>
+                                    <input type="text" id="admin-class" value="資訊二" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="input-group full-width">
-                            <label for="admin-email">電子郵件：</label>
-                            <input type="email" id="admin-email" placeholder="電子郵件 (用於遮擋顯示)">
-                        </div>
-                        
-                        <h3 style="margin-top: 30px;">活動/成績項目管理</h3>
-                        <table id="tasks-table-admin" class="data-table small-header">
-                            <thead>
-                                <tr>
-                                    <th>項目名稱</th>
-                                    <th>狀態</th>
-                                    <th style="width: 150px;">教師留言狀態</th>
-                                    <th style="width: 100px;">留言記錄</th>
-                                    <th style="width: 80px;">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                </tbody>
-                        </table>
-                        
-                        <button type="button" class="secondary-btn" onclick="addTaskRow()" style="margin-top: 10px;">+ 新增項目</button>
-                        
-                        <div class="form-actions">
-                            <button type="submit" id="submit-student-btn" class="primary-btn">新增學生</button>
+                            <div class="input-group full-width">
+                                <label for="admin-email">電子郵件：</label>
+                                <input type="email" id="admin-email" placeholder="電子郵件 (用於遮擋顯示)">
+                            </div>
                             
-                            <button type="button" id="switch-to-new-student-btn" class="success-btn hidden" onclick="resetForm(false)">新增學生 (切換)</button>
+                            <h3 style="margin-top: 30px;">活動/成績項目管理</h3>
+                            <table id="tasks-table-admin" class="data-table small-header">
+                                <thead>
+                                    <tr>
+                                        <th>項目名稱</th>
+                                        <th>狀態</th>
+                                        <th style="width: 150px;">教師留言狀態</th>
+                                        <th style="width: 100px;">留言記錄</th>
+                                        <th style="width: 80px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    </tbody>
+                            </table>
                             
-                            <button type="button" class="secondary-btn" onclick="resetForm()">重設/取消編輯</button>
-                        </div>
-                    </form>
+                            <button type="button" class="secondary-btn" onclick="addTaskRow()" style="margin-top: 10px;">+ 新增項目</button>
+                            
+                            <div class="form-actions">
+                                <button type="submit" id="submit-student-btn" class="primary-btn">新增學生</button>
+                                
+                                <button type="button" id="switch-to-new-student-btn" class="success-btn hidden" onclick="switchToNewStudentMode(true)">新增學生 (切換)</button>
+                                
+                                <button type="button" class="secondary-btn" onclick="showWelcomePanel(true)">返回</button>
+                            </div>
+                        </form>
+                    </div>
+
                 </div>
 
-                <div class="card list-card">
+                <div class="card list-card" id="student-list-card">
                     <h2>所有學生列表</h2>
                     <table id="student-list-table" class="data-table">
                         <thead>
