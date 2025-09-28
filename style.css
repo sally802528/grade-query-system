@@ -19,25 +19,31 @@ body {
 h2 {
     color: #2c3e50;
     border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 15px; /* 增加底部間距 */
+    padding-bottom: 15px; 
     margin-top: 0;
     text-align: center;
     font-size: 24px;
+}
+h3 {
+    color: #3498db; /* 標題顏色統一 */
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 8px;
+    margin-top: 0;
 }
 label {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
     color: #34495e;
-    font-size: 14px; /* 稍微縮小標籤字體 */
+    font-size: 14px; 
 }
-/* *** 核心優化點 1: 限制輸入框最大寬度並增加內邊距 *** */
+/* 核心優化點 1: 限制輸入框最大寬度並增加內邊距 */
 input[type="text"], 
 input[type="password"], 
 select, 
 textarea {
     width: 100%;
-    /* 限制所有輸入框的最大寬度，讓他們在寬螢幕上不會太寬 */
+    /* 限制所有輸入框的最大寬度 */
     max-width: 400px; 
     padding: 10px;
     margin-bottom: 15px;
@@ -45,7 +51,7 @@ textarea {
     border-radius: 6px;
     box-sizing: border-box;
     transition: border-color 0.3s;
-    background-color: #fafafa; /* 輕微背景色提升質感 */
+    background-color: #fafafa; 
 }
 
 /* 針對並排的輸入框，取消 max-width 讓他們平均分配空間 */
@@ -58,12 +64,12 @@ textarea {
 input:focus, select:focus, textarea:focus {
     border-color: #3498db;
     outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.2); /* 增加聚焦陰影 */
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.2); 
 }
 
-/* 按鈕樣式維持，僅微調 */
+/* 按鈕樣式 */
 button, .primary-btn, .secondary-btn, .logout-btn, .danger-btn {
-    padding: 10px 18px; /* 稍微增加按鈕內邊距 */
+    padding: 10px 18px; 
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -73,31 +79,40 @@ button, .primary-btn, .secondary-btn, .logout-btn, .danger-btn {
     transition: background-color 0.3s, opacity 0.3s, transform 0.1s;
 }
 button:active {
-    transform: translateY(1px); /* 點擊時微小下壓效果 */
+    transform: translateY(1px); 
 }
 
 .primary-btn {
     background-color: #3498db; 
     color: white;
     width: 100%;
-    max-width: 400px; /* 限制登入/提交按鈕的寬度 */
+    max-width: 400px; 
 }
-/* ... (省略其他按鈕顏色樣式，與先前版本一致) ... */
 .primary-btn:hover { background-color: #2980b9; }
 .secondary-btn { background-color: #95a5a6; color: white; }
 .secondary-btn:hover { background-color: #7f8c8d; }
-.logout-btn { background-color: #e74c3c; color: white; margin-top: 20px; }
+
+.logout-btn {
+    background-color: #e74c3c;
+    color: white;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 100%; /* 讓它佔滿 container */
+}
 .logout-btn:hover { background-color: #c0392b; }
 .danger-btn { background-color: #e74c3c; color: white; }
+
 #teacher-login-btn { 
     background-color: #f39c12 !important; /* 強制使用橙色 */
     max-width: 400px; /* 限制寬度 */
+    width: 100%;
+    display: block;
+    text-align: center;
 }
 #teacher-login-btn:hover { background-color: #e67e22 !important; }
 
-.hidden {
-    display: none;
-}
+/* 錯誤提示 */
+.hidden { display: none; }
 .error {
     color: #e74c3c;
     margin-top: -10px;
@@ -105,20 +120,14 @@ button:active {
     font-weight: 600;
     font-size: 14px;
 }
-/* 結果卡片/管理卡片 */
+/* 卡片樣式 */
 .result-card, .admin-card {
     background: #fdfdfd;
-    padding: 25px; /* 增加卡片內邊距 */
+    padding: 25px; 
     margin-top: 25px;
     border: 1px solid #eee;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04); /* 輕微提升陰影 */
-}
-.result-card h3 {
-    color: #3498db; /* 標題顏色統一 */
-    border-bottom: 1px solid #ecf0f1;
-    padding-bottom: 8px;
-    margin-top: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04); 
 }
 .result-card p {
     line-height: 1.8;
@@ -127,17 +136,18 @@ button:active {
 /* 表格樣式優化 */
 table {
     width: 100%;
-    border-collapse: separate; /* 為了圓角邊框 */
+    border-collapse: separate; 
     border-spacing: 0;
     margin-top: 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    overflow: hidden; /* 確保圓角生效 */
+    overflow: hidden; 
 }
 th, td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #eee; /* 更淺的分割線 */
+    border-bottom: 1px solid #eee; 
+    vertical-align: middle;
 }
 th {
     background-color: #eef1f3;
@@ -156,7 +166,7 @@ tr:last-child td {
 .form-group-inline {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px; /* 增加並排欄位間隔 */
+    gap: 20px; 
 }
 .form-group-inline > div {
     flex: 1 1 auto;
@@ -164,14 +174,14 @@ tr:last-child td {
 }
 .form-actions {
     display: flex;
-    gap: 15px; /* 增加按鈕間隔 */
+    gap: 15px; 
     margin-top: 25px;
 }
-/* 限制表單操作按鈕的整體寬度，與輸入框保持一致 */
 .form-actions > button {
     flex: 1;
     width: auto;
     margin: 0;
+    max-width: none; /* 讓這組按鈕平均分配空間 */
 }
 
 #switch-to-new-student-btn {
@@ -182,8 +192,8 @@ tr:last-child td {
     background-color: #27ae60;
 }
 #add-task-btn {
-    background-color: #bdc3c7; /* 使用更輕的灰色 */
-    color: #34495e; /* 使用深色字體 */
+    background-color: #bdc3c7; 
+    color: #34495e; 
     width: auto;
     margin-left: 0;
     margin-top: 15px;
@@ -193,23 +203,58 @@ tr:last-child td {
     background-color: #95a5a6;
     color: white;
 }
+#tasks-table-admin input[type="text"], #tasks-table-admin select {
+    margin-bottom: 0;
+    max-width: 100%;
+    padding: 8px;
+    background-color: #fff;
+}
+#tasks-table-admin td {
+    white-space: nowrap; /* 防止表格內容換行導致高度不一 */
+}
 
 /* Modal 樣式優化 */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px;
+}
 .modal-content {
     background-color: #fefefe;
-    margin: 3% auto; /* 讓 Modal 更靠上 */
+    margin: 3% auto; 
     padding: 30px;
     border: 1px solid #ccc;
     width: 90%; 
     max-width: 700px;
     border-radius: 10px;
+    position: relative;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
 }
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
+}
+
+/* 留言樣式 */
 .comment {
-    /* 讓留言行變得稍微緊湊 */
+    border: 1px solid #eee;
     padding: 12px; 
     margin-bottom: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    position: relative;
 }
 .comment strong {
     font-size: 13px;
@@ -218,14 +263,15 @@ tr:last-child td {
 .comment p {
     margin: 5px 0 0;
     font-size: 15px;
+    word-wrap: break-word; /* 避免長文字溢出 */
 }
 .comment-teacher {
     background-color: #e8f3fa; 
-    border-left: 6px solid #3498db;
+    border-left: 6px solid #3498db; /* 藍色邊框 */
 }
 .comment-student {
     background-color: #e9f8f4; 
-    border-left: 6px solid #2ecc71;
+    border-left: 6px solid #2ecc71; /* 綠色邊框 */
 }
 .comment-recalled, .comment-blocked {
     background-color: #fff8e6; /* 淺黃色 */
@@ -233,4 +279,12 @@ tr:last-child td {
     border-left-color: #f39c12;
     text-align: center;
     font-style: italic;
+    font-weight: bold;
+}
+.comment-actions button {
+    width: auto;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    margin: 0 0 0 5px; 
+    vertical-align: top;
 }
