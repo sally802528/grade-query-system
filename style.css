@@ -1,313 +1,216 @@
+/* style.css */
+
+/* 修復問題 7: 介面重新設計/一致性 */
 body {
-    font-family: '微軟正黑體', 'Arial', sans-serif;
-    background-color: #f4f7f9;
-    color: #333;
+    font-family: 'Segoe UI', '微軟正黑體', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+    color: #333;
 }
-
-h1, h2, h3 {
-    color: #007bff;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-/* 核心容器樣式 - 確保所有主要區塊都有背景、陰影和最大寬度 */
-#login-container, #teacher-login-container, #result-container, #admin-container {
+.container {
+    max-width: 900px;
+    margin: 0 auto;
     background: #fff;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
-
-#login-container, #teacher-login-container {
-    max-width: 400px;
+h2 {
+    color: #2c3e50;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+    margin-top: 0;
+    text-align: center;
 }
-#result-container {
-    max-width: 800px;
-}
-#admin-container {
-    max-width: 1000px;
-}
-
-/* 表單與輸入框 - 確保標籤和輸入框佔滿一行，實現垂直堆疊 */
 label {
-    display: block; /* 讓標籤獨佔一行 */
-    margin-top: 15px;
+    display: block;
     margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
+    font-weight: 600;
+    color: #34495e;
 }
-
-input[type="text"], input[type="password"], textarea, select {
-    width: 100%; /* 讓輸入框佔滿父容器寬度 */
+input[type="text"], input[type="password"], select, textarea {
+    width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
     box-sizing: border-box;
-    margin-bottom: 10px;
+    transition: border-color 0.3s;
 }
-
-/* 按鈕樣式 - 確保按鈕有足夠的間隔和顏色 */
-button {
+input:focus, select:focus, textarea:focus {
+    border-color: #3498db;
+    outline: none;
+}
+button, .primary-btn, .secondary-btn, .logout-btn, .danger-btn {
     padding: 10px 15px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
-    margin-top: 5px;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s, opacity 0.3s;
 }
-
-/* 主要按鈕 (藍色) */
-button[type="submit"], #teacher-login-btn, .primary-btn {
-    background-color: #007bff;
+.primary-btn {
+    background-color: #3498db; /* 藍色 */
     color: white;
-}
-button[type="submit"]:hover, #teacher-login-btn:hover, .primary-btn:hover {
-    background-color: #0056b3;
-}
-
-/* 教師入口按鈕 (橘色) */
-#teacher-login-btn {
-    width: 300px;
-    background-color: #ff9800;
-}
-#teacher-login-btn:hover {
-    background-color: #e68900;
-}
-
-/* 次要按鈕 (灰色) */
-.secondary-btn {
-    background-color: #6c757d;
-    color: white;
-    margin-left: 10px;
-}
-.secondary-btn:hover {
-    background-color: #5a6268;
-}
-
-/* 登出按鈕 (紅色) */
-.logout-btn {
-    background-color: #dc3545;
-    color: white;
-    margin-top: 20px;
     width: 100%;
 }
-.logout-btn:hover {
-    background-color: #c82333;
+.primary-btn:hover {
+    background-color: #2980b9;
 }
-
-.error {
-    color: red;
-    margin-top: 10px;
-    text-align: center;
+.secondary-btn {
+    background-color: #95a5a6; /* 灰色 */
+    color: white;
+}
+.secondary-btn:hover {
+    background-color: #7f8c8d;
+}
+.logout-btn {
+    background-color: #e74c3c;
+    color: white;
+    margin-top: 20px;
+}
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+.danger-btn {
+    background-color: #e74c3c;
+    color: white;
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
-
-/* 成績查詢結果區塊 */
-.info-card, .grade-and-tasks {
-    margin-bottom: 20px;
-    padding: 15px;
+.error {
+    color: #e74c3c;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+.result-card, .admin-card {
+    background: #fdfdfd;
+    padding: 20px;
+    margin-top: 20px;
     border: 1px solid #eee;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-
-/* 表格樣式 - 確保有邊框 */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 15px;
 }
-
 th, td {
-    border: 1px solid #ddd; /* 確保表格有邊框 */
     padding: 12px;
     text-align: left;
-    vertical-align: top;
+    border-bottom: 1px solid #ddd;
 }
-
 th {
-    background-color: #f2f2f2;
-    color: #333;
+    background-color: #f0f3f4;
+    color: #34495e;
+    font-weight: 700;
 }
-
-/* --- 狀態顏色與互動 --- */
-.status-已認證 {
-    color: green;
-    font-weight: bold;
+tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
+.status-已認證 { color: #2ecc71; font-weight: bold; }
+.status-認證失敗 { color: #e74c3c; font-weight: bold; }
+.status-審核中 { color: #f39c12; font-weight: bold; }
+.status-未完成 { color: #3498db; font-weight: bold; }
 
-.status-認證失敗 {
-    color: red;
-    font-weight: bold;
-}
-
-.status-審核中 {
-    color: blue;
-    font-weight: bold;
-}
-
-.status-未完成 {
-    color: orange;
-    font-weight: bold;
-}
-
-/* --- 教師管理介面專用佈局 --- */
-
-.admin-card {
-    border: 1px solid #007bff;
-    padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-/* 讓帳號和姓名輸入框在同一行 */
+/* 教師介面特定樣式 */
 .form-group-inline {
-    display: inline-block;
-    width: 49%; 
-    box-sizing: border-box;
-}
-
-.form-group-inline:first-child {
-    padding-right: 10px;
-}
-
-/* 表單底部的動作按鈕 */
-.form-actions {
-    margin-top: 20px;
     display: flex;
-    justify-content: flex-end; 
+    flex-wrap: wrap;
+    gap: 15px;
 }
-
+.form-group-inline > div {
+    flex: 1 1 auto;
+    min-width: calc(50% - 7.5px);
+}
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
 .form-actions button {
+    flex: 1;
     width: auto;
-    margin-left: 10px;
+    margin: 0;
 }
 
-/* 教師管理表格輸入框優化 */
-#admin-tasks-table input[type="text"], #admin-tasks-table select {
-    width: 95%;
-    padding: 5px;
-    margin: 2px 0;
-    box-sizing: border-box;
-}
-
-#admin-tasks-table button {
-    width: 100%;
-    margin: 2px 0;
-    padding: 3px 5px;
-    font-size: 12px;
-}
-
-/* 調整教師管理表格的欄位寬度以容納留言紀錄 */
-#admin-tasks-table th:nth-child(1), #admin-tasks-table td:nth-child(1) { width: 25%; } /* 項目名稱 */
-#admin-tasks-table th:nth-child(2), #admin-tasks-table td:nth-child(2) { width: 15%; } /* 狀態 */
-#admin-tasks-table th:nth-child(3), #admin-tasks-table td:nth-child(3) { width: 35%; } /* 教師留言 */
-#admin-tasks-table th:nth-child(4), #admin-tasks-table td:nth-child(4) { width: 15%; } /* 留言紀錄 */
-#admin-tasks-table th:nth-child(5), #admin-tasks-table td:nth-child(5) { width: 10%; } /* 操作 */
-
-/* 留言紀錄按鈕樣式 */
-.comment-history-btn {
-    padding: 3px 5px;
-    font-size: 12px;
-    background-color: #17a2b8; /* 藍綠色 */
+/* 調整新增學生按鈕的綠色樣式 (符合截圖) */
+#switch-to-new-student-btn {
+    background-color: #2ecc71; 
     color: white;
-    width: 100%;
-    box-sizing: border-box;
 }
-.comment-history-btn:hover {
-    background-color: #138496;
+/* 調整新增項目按鈕的灰色樣式 (符合截圖) */
+#add-task-btn {
+    background-color: #95a5a6;
+    color: white;
+    width: auto;
+    margin-left: 0;
 }
 
-
-/* --- 彈窗樣式 (留言與審核) --- */
+/* Modal 樣式 */
 .modal {
+    display: none; 
     position: fixed; 
     z-index: 100; 
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.7); 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px;
 }
-
 .modal-content {
     background-color: #fefefe;
+    margin: 5% auto;
     padding: 30px;
     border: 1px solid #888;
-    width: 90%;
-    max-width: 700px; 
-    border-radius: 8px;
+    width: 80%; 
+    max-width: 600px;
+    border-radius: 10px;
     position: relative;
-    max-height: 80vh; 
-    overflow-y: auto;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
-
 .close-btn {
     color: #aaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
-    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 20px;
 }
-
-#modal-comments-list {
-    border: 1px solid #ddd;
+.comment {
+    border: 1px solid #eee;
     padding: 10px;
-    margin-bottom: 20px;
-    max-height: 300px;
-    overflow-y: auto;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    position: relative;
 }
-
-#modal-comments-list p {
-    margin: 5px 0;
-    padding: 5px;
-    border-bottom: 1px dotted #eee;
-    font-size: 14px;
+.comment-teacher {
+    background-color: #eaf2f8; 
+    border-left: 5px solid #3498db;
 }
-
-/* 學生留言和提交區域 */
-#modal-student-comment-area {
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    text-align: right;
+.comment-student {
+    background-color: #f4f6f7; 
+    border-left: 5px solid #2ecc71;
 }
-
-#modal-student-comment-area h5 {
-    text-align: left;
-    margin-top: 0;
-    color: #555;
+.comment-recalled, .comment-blocked {
+    background-color: #fcf8e3; 
+    color: #8a6d3b;
+    border-left-color: #f39c12;
+    text-align: center;
 }
-
-#modal-student-comment-area textarea {
-    height: 70px;
-}
-
-#modal-submission-area {
-    text-align: right;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-}
-
-.submission-btn {
-    background-color: #28a745; /* 綠色提交按鈕 */
-    color: white;
-}
-.submission-btn:hover {
-    background-color: #1e7e34;
+.comment-actions button {
+    width: auto;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    margin: 0 0 0 5px; 
+    vertical-align: top;
 }
