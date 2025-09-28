@@ -1,157 +1,57 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成績與項目查詢系統</title>
-    <link rel="stylesheet" href="style.css"> 
-</head>
-<body>
+<div id="admin-container" class="hidden">
+    <h2>學生資料管理介面</h2>
 
-    <div id="login-container">
-        <h1>成績查詢登入</h1>
-        <form id="login-form">
-            <label for="school">學校名稱：</label>
-            <input type="text" id="school" name="school" required value="奇美高中">
+    <div class="admin-card">
+        <h3>新增 / 編輯學生</h3>
+        <form id="student-form">
+            <input type="hidden" id="student-original-account">
             
-            <label for="class">班級：</label>
-            <input type="text" id="class" name="class" required value="二年甲班">
-
-            <label for="account">帳號：</label>
-            <input type="text" id="account" name="account" required>
-
-            <label for="password">密碼 (Qimei@admin)：</label>
-            <input type="password" id="password" name="password" required>
+            <h4>活動/成績項目管理</h4>
+            <table id="admin-tasks-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">項目名稱</th>
+                        <th style="width: 15%;">狀態</th>
+                        <th style="width: 35%;">教師留言</th>
+                        <th style="width: 15%;">留言紀錄</th> <th style="width: 10%;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tasks-tbody">
+                    </tbody>
+            </table>
             
-            <button type="submit">登入查詢</button>
-            <p id="error-message" class="error"></p>
+            <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0;">+ 新增項目</button>
+
+            <div class="form-actions">
+                <button type="submit" id="form-submit-btn">新增學生</button>
+                <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
+            </div>
         </form>
     </div>
     
-    <button id="teacher-login-btn">我是教師，點擊登入管理介面</button>
-
-
-    <div id="teacher-login-container" class="hidden">
-        <h2>教師管理員登入</h2>
-        <form id="teacher-login-form">
-            <label for="teacher-password">管理密碼 (Teacher@admin)：</label>
-            <input type="password" id="teacher-password" name="teacher-password" required>
-            <button type="submit">登入管理</button>
-            <p id="teacher-error-message" class="error"></p>
-        </form>
-        <button onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
     </div>
 
-    <div id="admin-container" class="hidden">
-        <h2>學生資料管理介面</h2>
-
-        <div class="admin-card">
-            <h3>新增 / 編輯學生</h3>
-            <form id="student-form">
-                <input type="hidden" id="student-original-account">
-                
-                <div class="form-group-inline">
-                    <label for="new-account">帳號 (唯一)：</label>
-                    <input type="text" id="new-account" required>
-                </div>
-                
-                <div class="form-group-inline">
-                    <label for="new-name">姓名 (遮擋前)：</label>
-                    <input type="text" id="new-name" required>
-                </div>
-                
-                <h4>活動/成績項目管理</h4>
-                <table id="admin-tasks-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 30%;">項目名稱</th>
-                            <th style="width: 20%;">狀態</th>
-                            <th style="width: 40%;">教師留言</th>
-                            <th style="width: 10%;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-tasks-tbody">
-                        </tbody>
-                </table>
-                
-                <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0;">+ 新增項目</button>
-
-                <div class="form-actions">
-                    <button type="submit" id="form-submit-btn">新增學生</button>
-                    <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="admin-card">
-            <h3>所有學生列表</h3>
-            <table id="student-list-table">
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">帳號</th>
-                        <th style="width: 35%;">姓名</th>
-                        <th style="width: 40%;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
-        </div>
-
-        <button onclick="teacherLogout()" class="logout-btn">登出教師介面</button>
-    </div>
-
-    <div id="result-container" class="hidden">
-        <h2>查詢結果</h2>
+<div id="comment-history-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
         
-        <div class="info-card">
-            <h3>學生基本資料</h3>
-            <p>學號：<span id="display-student-id"></span></p>
-            <p>姓名：<span id="display-name"></span></p>
-            <p>學校：<span id="display-school"></span></p>
-            <p>班級：<span id="display-class"></span></p>
-            <p>電子郵件：li**g@qimei.edu.tw</p>
-        </div>
-
-        <div class="grade-and-tasks">
-            <h3>學期成績與活動完成度</h3>
-            <table id="student-view-table">
-                <thead>
-                    <tr>
-                        <th style="width: 35%;">項目</th>
-                        <th style="width: 20%;">狀態</th>
-                        <th style="width: 45%;">留言 / 操作</th>
-                    </tr>
-                </thead>
-                <tbody id="task-list">
-                    </tbody>
-            </table>
+        <div id="modal-comments-list">
+            </div>
+        
+        <div id="modal-student-comment-area" class="info-card">
+            <h5>新增留言 (給教師)</h5>
+            <textarea id="modal-new-student-comment" rows="3" placeholder="輸入您的留言..."></textarea>
+            <button onclick="submitStudentCommentFromModal()" class="primary-btn">提交留言</button>
         </div>
         
-        <button onclick="logout()" class="logout-btn">登出查詢</button>
-    </div>
-    
-    <div id="comment-history-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
-            
-            <div id="modal-comments-list">
-                </div>
-            
-            <div id="modal-student-comment-area" class="info-card">
-                <h5>新增留言 (給教師)</h5>
-                <textarea id="modal-new-student-comment" rows="3" placeholder="輸入您的留言..."></textarea>
-                <button onclick="submitStudentCommentFromModal()" class="primary-btn">提交留言</button>
-            </div>
-            
-            <div id="modal-submission-area">
-                <p class="error-message" id="modal-submission-message"></p>
-                <button onclick="confirmSubmissionFromModal()" class="primary-btn submission-btn">提交完成/重新審核</button>
-            </div>
+        <div id="modal-submission-area">
+            <p class="error-message" id="modal-submission-message"></p>
+            <button onclick="confirmSubmissionFromModal()" class="primary-btn submission-btn">提交完成/重新審核</button>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
