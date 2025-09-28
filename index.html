@@ -158,7 +158,23 @@
             flex: 1;
             width: auto;
         }
-
+        /* 修正按鈕樣式以符合截圖 */
+        #form-submit-btn {
+            background-color: #3498db; /* 藍色 */
+            color: white;
+        }
+        #switch-to-new-student-btn {
+            background-color: #2ecc71; /* 綠色 */
+            color: white;
+        }
+        #reset-form-btn {
+            background-color: #95a5a6; /* 灰色 */
+            color: white;
+        }
+        #add-task-btn {
+            background-color: #95a5a6; /* 灰色 */
+        }
+        
         /* Modal 樣式 */
         .modal {
             display: none; 
@@ -276,7 +292,7 @@
                 <button type="submit" class="primary-btn">登入查詢</button>
                 <p id="error-message" class="error"></p>
             </form>
-            <button id="teacher-login-btn" onclick="handleTeacherLoginClick()" class="secondary-btn">我是教師，點擊登入管理介面</button>
+            <button id="teacher-login-btn" onclick="handleTeacherLoginClick()" class="secondary-btn" style="background-color: orange; color: white;">我是教師，點擊登入管理介面</button>
         </div>
 
         <div id="teacher-login-container" class="hidden">
@@ -365,12 +381,14 @@
                         </tbody>
                     </table>
                     
-                    <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0;">+ 新增項目</button>
+                    <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0; background-color: #95a5a6; color: white;">+ 新增項目</button>
 
                     <div class="form-actions">
                         <button type="submit" id="form-submit-btn" class="primary-btn">新增學生</button>
+                        
                         <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn" style="background-color: #2ecc71;">新增學生 (切換)</button>
-                        <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
+                        
+                        <button type="button" id="reset-form-btn" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
                     </div>
                 </form>
             </div>
