@@ -9,7 +9,7 @@ let currentTaskItem = null;
 let isAdminMode = false;
 let students = {};
 
-// ... (loadStudentData 和 saveStudentData 保持不變) ...
+// --- 輔助函數：資料持久化 ---
 const DEFAULT_STUDENTS = {
     'A123456789': { 
         account: 'A123456789', 
@@ -58,6 +58,7 @@ function loadStudentData() {
                 s.class = s.class || '二年甲班';
                 s.email = s.email || 'li***g@qimei.edu.tw';
                 s.tasks.forEach(t => {
+                     // 確保每個留言都有 id 欄位
                      t.studentComments.forEach(c => c.id = c.id || Date.now() + Math.random());
                 });
             });
@@ -74,9 +75,38 @@ function saveStudentData(data) {
 }
 
 
-// --- 學生查詢介面邏輯 ---
+// --- 學生查詢介面邏輯 (修正 renderTasks 以匹配 3 欄位) ---
 
-// ... handleStudentLogin 保持不變 ...
+function handleStudentLogin(event) {
+    event.preventDefault();
+    const account = document.getElementById('account').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('error-message');
+    const studentInfo = students[account];
+    
+    if (password !== STUDENT_PASSWORD) {
+        errorMessage.textContent = '登入失敗：密碼錯誤，請檢查。';
+        return;
+    }
+    if (!studentInfo) {
+        errorMessage.textContent = '登入失敗：帳號不存在，請檢查。';
+        return;
+    }
+    
+    errorMessage.textContent = '';
+    document.getElementById('login-container').classList.add('hidden');
+    document.getElementById('teacher-login-btn').classList.add('hidden');
+    document.getElementById('result-container').classList.remove('hidden');
+    
+    // 顯示基本資料
+    document.getElementById('display-student-id').textContent = studentInfo.account;
+    document.getElementById('display-name').textContent = studentInfo.name.charAt(0) + '**' + studentInfo.name.charAt(studentInfo.name.length - 1);
+    document.getElementById('display-school').textContent = studentInfo.school;
+    document.getElementById('display-class').textContent = studentInfo.class;
+    document.getElementById('display-email').textContent = studentInfo.email;
+
+    renderTasks(studentInfo.tasks, account);
+}
 
 /** 修正: 確保學生介面表格只有三欄，解決介面錯位問題 */
 function renderTasks(tasks, account) {
@@ -93,7 +123,8 @@ function renderTasks(tasks, account) {
         const statusCell = row.insertCell();
         const statusSpan = document.createElement('span');
         statusSpan.textContent = data.status;
-        statusSpan.className = 'status-' + data.status.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
+        // 確保樣式名稱正確
+        statusSpan.className = 'status-' + data.status.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, ''); 
         statusCell.appendChild(statusSpan);
 
         // 欄位 3: 留言 / 操作 (整合)
@@ -132,7 +163,6 @@ window.logout = function() {
 
 
 // --- 教師介面切換與登入 (保持不變) ---
-
 function handleTeacherLoginClick() {
     isAdminMode = false;
     document.getElementById('login-container').classList.add('hidden');
@@ -205,7 +235,7 @@ function loadTasksToAdminTable(tasks, account = '') {
     });
 }
 
-/** 修正: 確保留言紀錄按鈕能正確綁定並在新增項目時使用即時的 item 值 */
+/** 修正: 確保留言紀錄按鈕能正確綁定到當前編輯的學生帳號和項目名稱 */
 function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', studentComments: [], pendingReview: false }, account = '') {
     const tbody = document.getElementById('admin-tasks-tbody');
     const row = tbody.insertRow();
@@ -233,12 +263,12 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     });
     statusCell.appendChild(statusSelect);
 
-    // 3. 教師留言狀態 (提示)
+    // 3. 教師留言狀態 (提示) - 這是第 3 欄
     const commentCell = row.insertCell();
     commentCell.textContent = '請點擊留言紀錄新增/修改';
     commentCell.style.color = '#888'; 
 
-    // 4. 留言紀錄按鈕
+    // 4. 留言紀錄按鈕 - 這是第 4 欄
     const historyCell = row.insertCell();
     const historyBtn = document.createElement('button');
     historyBtn.textContent = `留言 (${task.studentComments.filter(c => !c.isRecalled && !c.isBlocked).length})`;
@@ -247,9 +277,8 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     historyBtn.style.marginTop = '0';
     historyBtn.style.padding = '5px 10px';
     
-    // 修正: 確保在點擊時使用 itemInput.value 的即時值，這樣即使項目名稱在編輯器中被修改，留言按鈕仍會作用
+    // 修正: 確保在點擊時使用 itemInput.value 的即時值，並且檢查 account 是否存在
     historyBtn.onclick = () => {
-         // 在點擊時，從當前行取得帳號和項目名稱
          const currentAccount = document.getElementById('admin-account').value.trim();
          const currentItemName = itemInput.value.trim();
          if (currentAccount && currentItemName) {
@@ -261,7 +290,7 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     
     historyCell.appendChild(historyBtn);
 
-    // 5. 操作 (移除)
+    // 5. 操作 (移除) - 這是第 5 欄
     const actionCell = row.insertCell();
     const removeBtn = document.createElement('button');
     removeBtn.textContent = '移除';
@@ -281,19 +310,11 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
 
 function handleAddTaksClick() {
     const currentAccount = document.getElementById('admin-account').value.trim();
-    // 新增項目時，將當前編輯的帳號傳入，讓留言按鈕能知道目標學生是誰
+    // 新增項目時，將當前編輯的帳號傳入
     addTaskRow(undefined, currentAccount);
 }
 
-// ... resetForm 保持不變 ...
-// ... handleStudentFormSubmit 保持不變 ...
-// ... displayStudentList 保持不變 ...
-// ... removeStudent 保持不變 ...
-
-// --- 整合式留言/審核彈窗邏輯 (保持不變) ---
-
-// ... (所有與彈窗相關的函數保持不變：renderComment, showCommentModal, submitCommentFromModal, recallComment, blockComment, confirmSubmissionFromModal, closeModal) ...
-
+// ... (resetForm, handleStudentFormSubmit, displayStudentList, removeStudent 保持不變) ...
 
 // --- 初始化與事件監聽 (保持不變) ---
 
