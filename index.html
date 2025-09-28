@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成績與項目查詢系統</title>
-    <link rel="stylesheet" href="style.css"> 
     <style>
-        /* 由於沒有 style.css，這裡提供必要的樣式修正 */
         .hidden { display: none !important; }
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -21,7 +19,7 @@
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 24px; cursor: pointer; }
         .comment-item { 
             border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;
-            overflow: hidden; /* For float clear */
+            overflow: hidden; 
         }
         .error { color: red; }
         .primary-btn { background-color: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
@@ -35,6 +33,13 @@
             width: 100%; padding: 8px; margin: 5px 0 10px 0; display: inline-block;
             border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
         }
+        #modal-comments-list {
+            max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding: 5px; border: 1px solid #ccc;
+        }
+        .status-已認證 { color: green; font-weight: bold; }
+        .status-審核中 { color: blue; font-weight: bold; }
+        .status-認證失敗 { color: red; font-weight: bold; }
+        .status-未完成 { color: orange; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -54,7 +59,7 @@
             <label for="password">密碼 (Qimei@admin)：</label>
             <input type="password" id="password" name="password" required>
             
-            <button type="submit">登入查詢</button>
+            <button type="submit" class="primary-btn">登入查詢</button>
             <p id="error-message" class="error"></p>
         </form>
     </div>
@@ -137,7 +142,7 @@
                         <th style="width: 40%;">操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="student-list-tbody">
                     </tbody>
             </table>
         </div>
@@ -180,7 +185,7 @@
             <span class="close-btn" onclick="closeModal()">&times;</span>
             <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
             
-            <div id="modal-comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding: 5px;"></div>
+            <div id="modal-comments-list"></div>
             
             <div id="modal-student-comment-area" class="info-card">
                 <h5>新增留言</h5>
