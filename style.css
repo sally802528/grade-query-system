@@ -281,6 +281,11 @@ tr:last-child td {
     font-style: italic;
     font-weight: bold;
 }
+.comment-blocked {
+    background-color: #fcebeb; /* 淺紅色 */
+    color: #c0392b;
+    border-left-color: #e74c3c;
+}
 .comment-actions button {
     width: auto;
     padding: 3px 8px;
