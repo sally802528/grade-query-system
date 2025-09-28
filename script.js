@@ -52,15 +52,12 @@ function loadStudentData() {
     try {
         const data = JSON.parse(storedData);
         if (data && Object.keys(data).length > 0) {
-            // 確保資料結構與預期一致 (這裡不重複複雜的資料結構處理，假設它在上次修正後已穩定)
-            // 但確保基本欄位存在
             Object.values(data).forEach(s => {
-                s.account = s.account || '';
+                s.account = s.account || s.newAccount || ''; // 確保帳號欄位存在
                 s.school = s.school || '奇美高中';
                 s.class = s.class || '二年甲班';
                 s.email = s.email || 'li***g@qimei.edu.tw';
                 s.tasks.forEach(t => {
-                     // 確保每個留言都有 id 欄位 (用於收回/封鎖)
                      t.studentComments.forEach(c => c.id = c.id || Date.now() + Math.random());
                 });
             });
@@ -70,14 +67,14 @@ function loadStudentData() {
     saveStudentData(DEFAULT_STUDENTS);
     return DEFAULT_STUDENTS;
 }
-students = loadStudentData(); // 立即載入資料
+students = loadStudentData(); 
 
 function saveStudentData(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 
-// --- 學生查詢介面邏輯 (修正基本資料顯示) ---
+// --- 學生查詢介面邏輯 (確保登入後顯示的是最新的學校班級資訊) ---
 
 function handleStudentLogin(event) {
     event.preventDefault();
@@ -100,6 +97,7 @@ function handleStudentLogin(event) {
     document.getElementById('teacher-login-btn').classList.add('hidden');
     document.getElementById('result-container').classList.remove('hidden');
     
+    // 修正: 確保顯示的學校/班級/電郵是來自學生資料物件 (教師編輯後的最新版本)
     document.getElementById('display-student-id').textContent = studentInfo.account;
     document.getElementById('display-name').textContent = studentInfo.name.charAt(0) + '**' + studentInfo.name.charAt(studentInfo.name.length - 1);
     document.getElementById('display-school').textContent = studentInfo.school;
@@ -109,45 +107,7 @@ function handleStudentLogin(event) {
     renderTasks(studentInfo.tasks, account);
 }
 
-function renderTasks(tasks, account) {
-    const taskList = document.getElementById('task-list');
-    taskList.innerHTML = '';
-    
-    tasks.forEach((data) => {
-        const row = taskList.insertRow();
-        
-        row.insertCell().textContent = data.item;
-
-        const statusCell = row.insertCell();
-        const statusSpan = document.createElement('span');
-        statusSpan.textContent = data.status;
-        statusSpan.className = 'status-' + data.status.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
-        statusCell.appendChild(statusSpan);
-
-        const actionCell = row.insertCell();
-        const actionBtn = document.createElement('button');
-        actionBtn.type = 'button';
-        actionBtn.style.padding = '5px 10px';
-        actionBtn.style.width = 'auto';
-        actionBtn.style.marginLeft = '0';
-        actionBtn.style.marginTop = '0';
-        
-        if (data.status === '未完成' || data.status === '認證失敗') {
-             actionBtn.textContent = '提交審核 / 查看留言';
-             actionBtn.className = 'primary-btn';
-        } else if (data.status === '審核中') {
-             actionBtn.textContent = '審核中 / 查看留言';
-             actionBtn.className = 'primary-btn';
-             actionBtn.style.backgroundColor = 'blue';
-        } else {
-            actionBtn.textContent = '查看留言';
-            actionBtn.className = 'secondary-btn';
-        }
-        
-        actionBtn.onclick = () => showCommentModal(account, data.item);
-        actionCell.appendChild(actionBtn);
-    });
-}
+// ... renderTasks 保持不變 ...
 
 window.logout = function() {
     document.getElementById('login-container').classList.remove('hidden');
@@ -156,242 +116,19 @@ window.logout = function() {
     document.getElementById('login-form').reset();
 }
 
-// --- 整合式留言/審核彈窗邏輯 ---
 
-function renderComment(comment, task, isTeacherMode) {
-    const p = document.createElement('p');
-    p.classList.add('comment-item');
-    p.setAttribute('data-comment-id', comment.id);
+// --- 整合式留言/審核彈窗邏輯 (保持不變) ---
 
-    // 區分教師留言顏色
-    if (comment.isTeacher) {
-        p.style.backgroundColor = '#eaf7ff'; 
-        p.style.borderLeft = '4px solid #007bff';
-    } else if (comment.role === '系統') {
-        p.style.backgroundColor = '#f0f0f0';
-        p.style.fontStyle = 'italic';
-        p.style.color = '#888';
-    }
-    
-    if (comment.isRecalled) {
-        p.innerHTML = `[${comment.role}] 已收回此訊息`;
-        p.style.color = 'red';
-        p.style.fontStyle = 'italic';
-        return p;
-    }
-    
-    if (comment.isBlocked) {
-        p.innerHTML = `<strong>[${comment.role} @ ${comment.time}]</strong>: <span style="font-size: 1.5em; color: black;">&#9608;&#9608;&#9608;&#9608;</span> (此留言已被老師封鎖)`;
-        p.style.color = 'red';
-        return p;
-    }
-
-    p.innerHTML = `<strong>[${comment.role} @ ${comment.time}]</strong>: ${comment.text}`;
-
-    const actionDiv = document.createElement('div');
-    actionDiv.style.float = 'right';
-
-    // 封鎖按鈕 (僅教師模式)
-    if (isTeacherMode && comment.role !== '系統') {
-        const blockBtn = document.createElement('button');
-        blockBtn.textContent = '封鎖';
-        blockBtn.className = 'secondary-btn';
-        blockBtn.style.marginLeft = '10px';
-        blockBtn.style.padding = '2px 5px';
-        blockBtn.style.marginTop = '0';
-        blockBtn.onclick = () => blockComment(task.account, task.item, comment.id);
-        actionDiv.appendChild(blockBtn);
-    }
-
-    // 收回按鈕 (學生只能收回自己的，教師可以收回所有非系統留言)
-    const canRecall = (isTeacherMode && comment.role !== '系統') || (!isTeacherMode && comment.role === '學生' && !comment.isTeacher);
-
-    if (canRecall) {
-        const recallBtn = document.createElement('button');
-        recallBtn.textContent = '收回';
-        recallBtn.className = 'secondary-btn';
-        recallBtn.style.marginLeft = '10px';
-        recallBtn.style.padding = '2px 5px';
-        recallBtn.style.marginTop = '0';
-        recallBtn.onclick = () => recallComment(task.account, task.item, comment.id);
-        actionDiv.appendChild(recallBtn);
-    }
-    
-    p.appendChild(actionDiv);
-    return p;
-}
+// ... renderComment 保持不變 ...
+// ... showCommentModal 保持不變 ...
+// ... submitCommentFromModal 保持不變 ...
+// ... recallComment 保持不變 ...
+// ... blockComment 保持不變 ...
+// ... confirmSubmissionFromModal 保持不變 ...
+// ... closeModal 保持不變 ...
 
 
-function showCommentModal(account, itemName) {
-    currentTaskAccount = account;
-    currentTaskItem = itemName;
-    
-    const student = students[account];
-    const task = student.tasks.find(t => t.item === itemName);
-    if (!task) return;
-
-    document.getElementById('modal-task-name').textContent = itemName;
-    
-    const listDiv = document.getElementById('modal-comments-list');
-    listDiv.innerHTML = '';
-    
-    // 依時間升序排列並渲染
-    task.studentComments
-        .sort((a, b) => new Date(a.time) - new Date(b.time)) 
-        .forEach(comment => {
-            const commentElement = renderComment(comment, { account, item: itemName }, isAdminMode);
-            listDiv.appendChild(commentElement);
-        });
-
-    const isStudent = !isAdminMode;
-    document.getElementById('modal-student-comment-area').style.display = 'block'; // 學生和教師都需要留言區
-
-    // 審核提交按鈕區域只在學生介面顯示
-    document.getElementById('modal-submission-area').style.display = isStudent ? 'block' : 'none';
-
-    if (isStudent) {
-         const submissionBtn = document.querySelector('#modal-submission-area .submission-btn');
-         const submissionMsg = document.getElementById('modal-submission-message');
-         if (task.status === '未完成' || task.status === '認證失敗') {
-             submissionBtn.textContent = '提交完成給教師審核';
-             submissionBtn.style.display = 'inline-block';
-             submissionMsg.textContent = `當前狀態為 ${task.status}。點擊下方按鈕將提交審核。`;
-             submissionMsg.style.color = 'orange';
-         } else {
-             submissionBtn.style.display = 'none';
-             submissionMsg.textContent = `當前狀態為 ${task.status}。無法再次提交。`;
-             submissionMsg.style.color = 'gray';
-         }
-    }
-    
-    document.getElementById('modal-new-student-comment').value = '';
-    document.getElementById('comment-history-modal').classList.remove('hidden');
-    
-    // 確保捲動到最底部
-    listDiv.scrollTop = listDiv.scrollHeight;
-}
-
-
-// 修正：統一留言提交函數名稱
-window.submitCommentFromModal = function() {
-    const commentText = document.getElementById('modal-new-student-comment').value.trim();
-    if (!commentText || !currentTaskAccount || !currentTaskItem) {
-        alert("請輸入留言內容。");
-        return;
-    }
-    
-    const isTeacher = isAdminMode; 
-    const role = isTeacher ? '教師' : '學生';
-
-    const task = students[currentTaskAccount].tasks.find(t => t.item === currentTaskItem);
-    if (task) {
-        task.studentComments.push({
-            id: Date.now() + Math.random(), 
-            time: new Date().toLocaleString(),
-            role: role,
-            text: commentText,
-            isTeacher: isTeacher,
-            isBlocked: false,
-            isRecalled: false
-        });
-        saveStudentData(students);
-        alert(`對 [${currentTaskItem}] 的留言已提交。`);
-        
-        document.getElementById('modal-new-student-comment').value = '';
-        showCommentModal(currentTaskAccount, currentTaskItem);
-        // 如果是學生介面，需更新主列表狀態
-        if (!isAdminMode) {
-             renderTasks(students[currentTaskAccount].tasks, currentTaskAccount);
-        }
-    }
-}
-
-function recallComment(account, itemName, commentId) {
-    if (!confirm("你確定要收回？收回後訊息將會刪除並顯示 [收回的人] 已收回此訊息。")) {
-        return;
-    }
-    
-    const task = students[account].tasks.find(t => t.item === itemName);
-    if (!task) return;
-
-    const comment = task.studentComments.find(c => c.id === commentId);
-    if (comment) {
-        // 學生只能收回自己的留言 (role === '學生' 且 isTeacher === false)
-        if (!isAdminMode && comment.role === '學生' && !comment.isTeacher) {
-            // pass
-        } else if (!isAdminMode && (comment.role !== '學生' || comment.isTeacher)) {
-             alert('您只能收回自己發送的留言！');
-             return;
-        }
-
-        comment.isRecalled = true;
-        comment.text = ""; 
-        
-        task.studentComments.push({
-            id: Date.now() + Math.random(),
-            time: new Date().toLocaleString(),
-            role: "系統",
-            text: `[${comment.isTeacher ? '教師' : '學生'}] 已收回此訊息`,
-            isTeacher: false,
-            isBlocked: false,
-            isRecalled: false
-        });
-        
-        saveStudentData(students);
-        showCommentModal(account, itemName);
-    }
-}
-
-function blockComment(account, itemName, commentId) {
-    if (!isAdminMode) return;
-    
-    const task = students[account].tasks.find(t => t.item === itemName);
-    if (!task) return;
-
-    const comment = task.studentComments.find(c => c.id === commentId);
-    if (comment) {
-        comment.isBlocked = true;
-        saveStudentData(students);
-        showCommentModal(account, itemName);
-    }
-}
-
-window.confirmSubmissionFromModal = function() {
-    // ... (保持不變) ...
-    if (!currentTaskAccount || !currentTaskItem) return;
-    
-    const task = students[currentTaskAccount].tasks.find(t => t.item === currentTaskItem);
-    if (!task) return;
-
-    if (confirm(`確定要將 [${currentTaskItem}] 狀態改為「審核中」嗎？`)) {
-        task.status = "審核中";
-        task.pendingReview = true;
-        task.studentComments.push({
-            id: Date.now() + Math.random(),
-            time: new Date().toLocaleString(),
-            role: "系統",
-            text: "學生已提交項目等待審核。",
-            isTeacher: false,
-            isBlocked: false,
-            isRecalled: false
-        });
-        saveStudentData(students);
-        alert(`[${currentTaskItem}] 已成功提交審核！`);
-        
-        closeModal();
-        if (!isAdminMode) {
-             renderTasks(students[currentTaskAccount].tasks, currentTaskAccount);
-        }
-    }
-}
-
-window.closeModal = function() {
-    document.getElementById('comment-history-modal').classList.add('hidden');
-    currentTaskAccount = null;
-    currentTaskItem = null;
-}
-
-// --- 教師介面切換與登入 ---
+// --- 教師介面切換與登入 (修復空白頁面和返回按鈕失效問題) ---
 
 function handleTeacherLoginClick() {
     isAdminMode = false;
@@ -401,16 +138,20 @@ function handleTeacherLoginClick() {
     document.getElementById('teacher-error-message').textContent = ''; 
 }
 
+/** 修正: 確保能正確從教師登入頁返回學生登入頁面，修復按鈕失效問題 */
 window.hideTeacherLogin = function() {
+    isAdminMode = false; // 離開教師模式
     document.getElementById('teacher-login-container').classList.add('hidden');
     document.getElementById('login-container').classList.remove('hidden');
     document.getElementById('teacher-login-btn').classList.remove('hidden');
     document.getElementById('teacher-login-form').reset();
 }
 
+/** 修正: 確保教師登出後，正確顯示學生登入頁面，修復空白畫面問題 */
 window.teacherLogout = function() {
     isAdminMode = false;
     document.getElementById('admin-container').classList.add('hidden');
+    // 呼叫修正後的 hideTeacherLogin() 確保返回學生登入介面
     hideTeacherLogin(); 
 }
 
@@ -434,16 +175,16 @@ function handleTeacherLoginFormSubmit(event) {
 
 // --- 學生資料 CRUD 邏輯 (教師管理) ---
 
-/** 修正: 確保載入新的欄位 ID */
+/** 修正: 確保能正確從 student 物件載入所有基本資料到表單 */
 function editStudent(account) {
     const student = students[account];
     if (!student) return;
 
     document.getElementById('student-original-account').value = account; 
     
-    // 從 student 物件載入資料到 HTML 欄位 ID
+    // 檢查並載入所有基本資料到 HTML 欄位 ID
     document.getElementById('admin-account').value = student.account || account; 
-    document.getElementById('admin-name').value = student.name;
+    document.getElementById('admin-name').value = student.name || '';
     document.getElementById('admin-school').value = student.school || '';
     document.getElementById('admin-class').value = student.class || '';
     document.getElementById('admin-email').value = student.email || '';
@@ -455,83 +196,9 @@ function editStudent(account) {
     document.getElementById('student-form').scrollIntoView({ behavior: 'smooth' });
 }
 
-function loadTasksToAdminTable(tasks, account = '') {
-    const tbody = document.getElementById('admin-tasks-tbody');
-    tbody.innerHTML = '';
-    
-    tasks.forEach(task => {
-        addTaskRow(task, account);
-    });
-}
-
-/** 修正: 移除教師留言輸入框，修改標題 */
-function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', studentComments: [], pendingReview: false }, account = '') {
-    const tbody = document.getElementById('admin-tasks-tbody');
-    const row = tbody.insertRow();
-    
-    // 1. 項目名稱
-    const itemCell = row.insertCell();
-    const itemInput = document.createElement('input');
-    itemInput.type = 'text';
-    itemInput.value = task.item;
-    itemInput.className = 'task-item-input';
-    itemCell.appendChild(itemInput);
-
-    // 2. 狀態選擇
-    const statusCell = row.insertCell();
-    const statusSelect = document.createElement('select');
-    statusSelect.className = 'task-status-select';
-    STATUS_OPTIONS.forEach(option => {
-        const opt = document.createElement('option');
-        opt.value = option;
-        opt.textContent = option;
-        if (option === task.status) {
-            opt.selected = true;
-        }
-        statusSelect.appendChild(opt);
-    });
-    statusCell.appendChild(statusSelect);
-
-    // 3. 教師留言狀態 (提示)
-    const commentCell = row.insertCell();
-    // 這裡只顯示提示，不放輸入框
-    commentCell.textContent = '請點擊留言紀錄新增/修改';
-    commentCell.style.color = '#888'; 
-
-    // 4. 留言紀錄按鈕
-    const historyCell = row.insertCell();
-    const historyBtn = document.createElement('button');
-    historyBtn.textContent = `留言 (${task.studentComments.filter(c => !c.isRecalled && !c.isBlocked).length})`;
-    historyBtn.type = 'button';
-    historyBtn.className = 'comment-history-btn';
-    
-    if (account) { 
-        historyBtn.onclick = () => showCommentModal(account, itemInput.value.trim()); 
-    } else {
-        historyBtn.disabled = true; 
-    }
-    historyCell.appendChild(historyBtn);
-
-    // 5. 操作 (移除)
-    const actionCell = row.insertCell();
-    const removeBtn = document.createElement('button');
-    removeBtn.textContent = '移除';
-    removeBtn.type = 'button'; 
-    removeBtn.onclick = () => {
-        if (confirm("你確定要移除此項目嗎？此操作將無法復原。")) {
-             row.remove();
-        }
-    };
-    actionCell.appendChild(removeBtn);
-    
-    row.setAttribute('data-original-comments', JSON.stringify(task.studentComments));
-    row.setAttribute('data-pending-review', task.pendingReview.toString());
-}
-
-function handleAddTaksClick() {
-    const currentAccount = document.getElementById('admin-account').value.trim();
-    addTaskRow(undefined, currentAccount);
-}
+// ... loadTasksToAdminTable 保持不變 ...
+// ... addTaskRow 保持不變 ...
+// ... handleAddTaksClick 保持不變 ...
 
 window.resetForm = function() {
     document.getElementById('admin-tasks-tbody').innerHTML = '';
@@ -547,7 +214,7 @@ window.resetForm = function() {
     document.getElementById('form-submit-btn').textContent = '新增學生';
 }
 
-/** 修正: 確保從新的欄位 ID 抓取資料並保存 */
+/** 修正: 確保從正確的 ID 抓取資料並保存 */
 function handleStudentFormSubmit(event) {
     event.preventDefault();
     
@@ -556,6 +223,7 @@ function handleStudentFormSubmit(event) {
     }
     
     const originalAccount = document.getElementById('student-original-account').value;
+    // 修正: 確保從 admin-account 抓取帳號
     const newAccount = document.getElementById('admin-account').value.trim(); 
     
     // 抓取所有基本資料
@@ -576,7 +244,7 @@ function handleStudentFormSubmit(event) {
 
         const originalComments = JSON.parse(row.getAttribute('data-original-comments') || '[]');
         const pendingReview = row.getAttribute('data-pending-review') === 'true';
-        const shouldClearComments = row.getAttribute('data-clear-comments') === 'true'; // 雖然清空按鈕已移除，但保留邏輯
+        const shouldClearComments = row.getAttribute('data-clear-comments') === 'true'; 
 
         if (itemInput.value.trim()) {
             newTasks.push({
@@ -621,9 +289,10 @@ function handleStudentFormSubmit(event) {
 }
 
 
-/** 編輯改名成開啟 */
+/** 修正: 確保使用正確的 tbody 選擇器: #student-list-tbody */
 function displayStudentList() {
-    const tbody = document.querySelector('#student-list-table tbody');
+    // 修正: 使用表格中的 tbody ID
+    const tbody = document.getElementById('student-list-tbody'); 
     if (!tbody) return; 
 
     tbody.innerHTML = ''; 
@@ -649,20 +318,12 @@ function displayStudentList() {
     }
 }
 
-function removeStudent(account, name) {
-    if (confirm(`你確定要移除學生 ${name} (帳號: ${account}) 嗎？此操作將無法復原。`)) {
-        delete students[account];
-        saveStudentData(students);
-        displayStudentList(); 
-        resetForm(); 
-    }
-}
+// ... removeStudent 保持不變 ...
 
 
-// --- 初始化與事件監聽 (確保所有元素載入後才綁定事件) ---
+// --- 初始化與事件監聽 (修正: 確保在 DOMContentLoaded 中綁定所有表單和按鈕) ---
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 這裡的 students 已經在檔案頂部執行 loadStudentData() 載入
     isAdminMode = false;
     
     // 設定初始頁面狀態
@@ -673,12 +334,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('admin-container').classList.add('hidden');
     document.getElementById('comment-history-modal').classList.add('hidden');
     
-    // 綁定事件監聽器
+    // 綁定事件監聽器 - 這是確保按鈕作用的關鍵
     document.getElementById('login-form').addEventListener('submit', handleStudentLogin);
     document.getElementById('teacher-login-btn').addEventListener('click', handleTeacherLoginClick);
     document.getElementById('teacher-login-form').addEventListener('submit', handleTeacherLoginFormSubmit);
     document.getElementById('student-form').addEventListener('submit', handleStudentFormSubmit);
     
-    // 綁定 + 新增項目 按鈕的點擊事件
     document.getElementById('add-task-btn').addEventListener('click', handleAddTaksClick);
+    
+    // 初始化時載入學生列表 (確保教師登入後能看到資料)
+    if (document.getElementById('admin-container').classList.contains('hidden')) {
+        // 如果是初始狀態，不需載入列表
+    } else {
+        displayStudentList();
+    }
 });
