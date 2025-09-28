@@ -3,322 +3,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成績與項目查詢系統</title>
-    
+    <title>成績查詢與管理系統</title>
     <style>
-        /* [略：基礎樣式設定] */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; }
-        h1, h2, h3 { color: #2c3e50; font-weight: 600; }
-        .hidden { display: none !important; }
-        .error { color: #e74c3c; font-weight: bold; margin-top: 10px; }
-        
-        /* 容器與卡片樣式 */
-        #login-container, #teacher-login-container, #admin-container, #result-container {
-            max-width: 800px; margin: 40px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
         }
-        .admin-card { border: 1px solid #e0e6ed; padding: 20px; margin-bottom: 25px; border-radius: 8px; background-color: #f9fbfd; }
-        .info-card { padding: 15px; border: 1px solid #dcdfe6; border-radius: 5px; margin-top: 15px; background-color: #ecf0f1; }
-
-        /* 表單元素樣式 */
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input[type="text"], input[type="password"], textarea, select {
-            width: 100%; padding: 10px 12px; margin: 5px 0 15px 0; display: inline-block;
-            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        input[type="text"], input[type="password"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
             transition: border-color 0.3s;
         }
-        textarea { resize: vertical; max-height: 400px; } 
-
-        input:focus, textarea:focus, select:focus { border-color: #3498db; outline: none; }
-        .form-group-inline { display: flex; flex-wrap: wrap; margin: -10px; }
-        .form-group-inline > div { padding: 10px; box-sizing: border-box; }
-
-        /* 按鈕樣式 */
-        .primary-btn { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px; transition: background-color 0.3s; }
-        .primary-btn:hover { background-color: #2980b9; }
-        .secondary-btn { background-color: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px; margin-right: 10px; transition: background-color 0.3s; }
-        .secondary-btn:hover { background-color: #7f8c8d; }
-        .logout-btn { background-color: #e74c3c; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; margin-top: 25px; width: 100%; transition: background-color 0.3s; }
-        .logout-btn:hover { background-color: #c0392b; }
-        .comment-history-btn { margin-top: 0 !important; }
-
-        /* 表格結構 & 列表按鈕寬度修正 */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; } 
-        th, td { border: 1px solid #ecf0f1; padding: 12px; text-align: left; vertical-align: middle; word-wrap: break-word; }
-        th { background-color: #f2f4f6; color: #555; font-weight: 600; border-top: 2px solid #ddd; }
-        
-        #student-list-table td button { 
-            margin-right: 5px; 
-            margin-top: 0; 
-            padding: 6px 12px; 
-            font-size: 0.9em; 
-            width: auto !important; 
+        input:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        button, .primary-btn, .secondary-btn, .logout-btn, .danger-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s, opacity 0.3s;
+            width: 100%; /* 預設寬度 */
+        }
+        .primary-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        .primary-btn:hover {
+            background-color: #2980b9;
+        }
+        .secondary-btn {
+            background-color: #ecf0f1;
+            color: #34495e;
+            border: 1px solid #bdc3c7;
+        }
+        .secondary-btn:hover {
+            background-color: #bdc3c7;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            margin-top: 20px;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+        .danger-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .danger-btn:hover {
+            background-color: #c0392b;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            font-weight: 600;
         }
 
-        /* 留言紀錄樣式 (修正 1 & 2) */
-        .comment-item { 
-            position: relative; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border-radius: 4px; 
-            word-wrap: break-word; 
-            padding-right: 80px; 
+        /* 查詢結果介面 */
+        .result-card, .admin-card {
+            background: #fdfdfd;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
+        .result-card h3, .admin-card h3 {
+            color: #3498db;
+            border-bottom: 1px dashed #ecf0f1;
+            padding-bottom: 8px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f0f3f4;
+            color: #34495e;
+            font-weight: 700;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .status-已認證 { color: #2ecc71; font-weight: bold; }
+        .status-認證失敗 { color: #e74c3c; font-weight: bold; }
+        .status-審核中 { color: #f39c12; font-weight: bold; }
+        .status-未完成 { color: #3498db; font-weight: bold; }
         
-        .comment-actions {
-            position: absolute; 
-            top: 5px;
-            right: 10px;
+        /* 教師介面特定樣式 */
+        .form-group-inline {
             display: flex;
-            gap: 5px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-
-        .comment-actions button {
-            padding: 2px 5px !important; 
-            font-size: 0.75em !important; 
-            margin-top: 0 !important;
-            height: 25px;
-            line-height: 15px;
+        .form-group-inline > div {
+            flex: 1 1 auto;
+            min-width: calc(50% - 7.5px);
         }
-
-        /* 修正 1 & 2 樣式 */
-        .comment-recalled, .comment-blocked {
-            color: #888;
-            font-style: italic;
-            border-left: 3px solid #f39c12; 
-            padding: 5px 0 5px 10px; 
-            display: block; 
-            margin-top: 5px;
-            background-color: #fff2cc; 
-        }
-        
-        /* 修正 3: 表單操作按鈕排版 */
         .form-actions {
-             display: flex;
-             gap: 10px; 
-             margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         .form-actions button {
-             width: auto;
-             flex-grow: 1; 
+            flex: 1;
+            width: auto;
         }
-        
+
         /* Modal 樣式 */
         .modal {
             display: none; 
             position: fixed; 
-            z-index: 10; 
+            z-index: 100; 
             left: 0;
             top: 0;
             width: 100%; 
             height: 100%; 
             overflow: auto; 
             background-color: rgba(0,0,0,0.4); 
-            padding-top: 50px;
+            padding-top: 60px;
         }
-
         .modal-content {
             background-color: #fefefe;
-            margin: auto; 
-            padding: 20px;
+            margin: 5% auto;
+            padding: 30px;
             border: 1px solid #888;
-            width: 80%;
+            width: 80%; 
             max-width: 600px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
         }
-
         .close-btn {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
         }
-
         .close-btn:hover,
         .close-btn:focus {
             color: #000;
             text-decoration: none;
             cursor: pointer;
         }
-        
-        /* 修正 1: 留言列表的高度 */
-        #modal-comments-list {
-            max-height: 400px; 
-            overflow-y: auto; 
+        .comment {
+            border: 1px solid #eee;
             padding: 10px;
-            border: 1px solid #e0e6ed;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            position: relative;
+        }
+        .comment-teacher {
+            background-color: #eaf2f8; 
+            border-left: 5px solid #3498db;
+        }
+        .comment-student {
+            background-color: #f4f6f7; 
+            border-left: 5px solid #2ecc71;
+        }
+        .comment-time {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .comment-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .comment-actions button {
+            width: auto;
+            padding: 3px 8px;
+            font-size: 0.75em;
+            margin: 0;
+        }
+        .comment-recalled {
+            background-color: #fcf8e3; 
+            color: #8a6d3b;
+            border-left-color: #f39c12;
+            text-align: center;
+        }
+        .comment-blocked {
+            background-color: #f2dede; 
+            color: #a94442;
+            border-left-color: #e74c3c;
+            text-align: center;
+        }
+        .submission-area {
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div id="login-container">
-        <h1>成績查詢登入</h1>
-        <form id="login-form">
-            <div class="form-group-inline">
-                <div style="width: 50%;">
-                    <label for="school">學校名稱：</label>
-                    <input type="text" id="school" name="school" required value="奇美高中">
-                </div>
-                <div style="width: 50%;">
-                    <label for="class">班級：</label>
-                    <input type="text" id="class" name="class" required value="二年甲班">
-                </div>
-                <div style="width: 50%;">
-                    <label for="account">帳號 (學號)：</label>
-                    <input type="text" id="account" name="account" required>
-                </div>
-                <div style="width: 50%;">
-                    <label for="password">密碼 (Qimei@admin)：</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-            </div>
-            
-            <button type="submit" class="primary-btn">登入查詢</button>
-            <p id="error-message" class="error"></p>
-        </form>
-    </div>
-    
-    <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-        <button id="teacher-login-btn" class="primary-btn" style="background-color: #f39c12;">我是教師，點擊登入管理介面</button>
-    </div>
-
-    <div id="teacher-login-container" class="hidden">
-        <h2>教師管理員登入</h2>
-        <form id="teacher-login-form">
-            <label for="teacher-password">管理密碼 (Teacher@admin)：</label>
-            <input type="password" id="teacher-password" name="teacher-password" required>
-            <button type="submit" class="primary-btn">登入管理</button>
-            <button type="button" onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
-            <p id="teacher-error-message" class="error"></p>
-        </form>
-    </div>
-
-    <div id="admin-container" class="hidden">
-        <h2>學生資料管理介面</h2>
-
-        <div class="admin-card">
-            <h3>新增 / 編輯學生</h3>
-            <form id="student-form">
-                <input type="hidden" id="student-original-account">
-                
+    <div class="container">
+        
+        <div id="login-container">
+            <h2>成績查詢登入</h2>
+            <form id="login-form">
+                <label for="school">學校名稱：</label>
+                <input type="text" id="school" value="奇美高中" required>
                 <div class="form-group-inline">
                     <div style="width: 50%;">
-                        <label for="admin-account">學號 (唯一)：</label>
-                        <input type="text" id="admin-account" required> 
+                        <label for="class">班級：</label>
+                        <input type="text" id="class" value="二年甲班" required>
                     </div>
                     <div style="width: 50%;">
-                        <label for="admin-name">姓名 (遮擋前)：</label>
-                        <input type="text" id="admin-name" required> 
-                    </div>
-                    <div style="width: 50%;">
-                        <label for="admin-school">學校名稱：</label>
-                        <input type="text" id="admin-school" required>
-                    </div>
-                    <div style="width: 50%;">
-                        <label for="admin-class">班級：</label>
-                        <input type="text" id="admin-class" required>
-                    </div>
-                    <div style="width: 100%;">
-                         <label for="admin-email">電子郵件：</label>
-                        <input type="text" id="admin-email" placeholder="li**g@qimei.edu.tw">
+                        <label for="account">學號：</label>
+                        <input type="text" id="account" required>
                     </div>
                 </div>
+                <label for="password">密碼 (Qimei@admin)：</label>
+                <input type="password" id="password" required>
+                <button type="submit" class="primary-btn">登入查詢</button>
+                <p id="error-message" class="error"></p>
+            </form>
+            <button id="teacher-login-btn" onclick="handleTeacherLoginClick()" class="secondary-btn">我是教師，點擊登入管理介面</button>
+        </div>
 
-                <h4>活動/成績項目管理</h4>
-                <table id="admin-tasks-table">
-                    <thead>
-                        <tr>
-                            <th>項目名稱</th>
-                            <th>狀態</th>
-                            <th>教師留言狀態</th>
-                            <th>留言紀錄</th> 
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-tasks-tbody">
-                        </tbody>
-                </table>
-                
-                <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0;">+ 新增項目</button>
-
-                <div class="form-actions">
-                    <button type="submit" id="form-submit-btn" class="primary-btn">新增學生</button>
-                    <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn" style="background-color: #2ecc71;">新增學生 (切換)</button>
-                    <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
-                </div>
+        <div id="teacher-login-container" class="hidden">
+            <h2>教師管理員登入</h2>
+            <form id="teacher-login-form">
+                <label for="teacher-password">管理密碼 (Teacher@admin)：</label>
+                <input type="password" id="teacher-password" name="teacher-password" required>
+                <button type="submit" class="primary-btn">登入管理</button>
+                <button type="button" onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
+                <p id="teacher-error-message" class="error"></p>
             </form>
         </div>
 
-        <div class="admin-card">
-            <h3>所有學生列表</h3>
-            <table id="student-list-table">
-                <thead>
-                    <tr>
-                        <th>學號</th>
-                        <th>姓名</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="student-list-tbody">
+        <div id="result-container" class="hidden">
+            <h2>查詢結果</h2>
+            <div class="result-card">
+                <h3>學生基本資料</h3>
+                <p><span class="info-label">學號：</span><span id="display-student-id"></span></p>
+                <p><span class="info-label">姓名：</span><span id="display-name"></span></p>
+                <p><span class="info-label">學校：</span><span id="display-school"></span></p>
+                <p><span class="info-label">班級：</span><span id="display-class"></span></p>
+                <p><span class="info-label">電子郵件：</span><span id="display-email"></span></p>
+            </div>
+
+            <div class="result-card">
+                <h3>學期成績與活動完成度</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>狀態</th>
+                            <th>留言 / 操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-list">
                     </tbody>
-            </table>
-        </div>
-
-        <button onclick="teacherLogout()" class="logout-btn">登出教師介面</button>
-    </div>
-
-    <div id="result-container" class="hidden">
-        <h2>查詢結果</h2>
-        
-        <div class="info-card">
-            <h3>學生基本資料</h3>
-            <p>學號：<span id="display-student-id"></span></p>
-            <p>姓名：<span id="display-name"></span></p>
-            <p>學校：<span id="display-school"></span></p>
-            <p>班級：<span id="display-class"></span></p>
-            <p>電子郵件：<span id="display-email"></span></p>
-        </div>
-
-        <div class="grade-and-tasks">
-            <h3>學期成績與活動完成度</h3>
-            <table id="student-view-table">
-                <thead>
-                    <tr>
-                        <th>項目</th>
-                        <th>狀態</th>
-                        <th>留言 / 操作</th>
-                    </tr>
-                </thead>
-                <tbody id="task-list">
-                    </tbody>
-            </table>
+                </table>
+            </div>
+            
+            <button onclick="logout()" class="logout-btn">登出查詢</button>
         </div>
         
-        <button onclick="logout()" class="logout-btn">登出查詢</button>
+        <div id="admin-container" class="hidden">
+            <h2>學生資料管理介面</h2>
+
+            <div class="admin-card">
+                <h3>新增 / 編輯學生</h3>
+                <form id="student-form">
+                    <input type="hidden" id="student-original-account">
+                    
+                    <div class="form-group-inline">
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-account">學號 (唯一)：</label>
+                            <input type="text" id="admin-account" required> 
+                        </div>
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-name">姓名 (遮擋前)：</label>
+                            <input type="text" id="admin-name" required> 
+                        </div>
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-school">學校名稱：</label>
+                            <input type="text" id="admin-school" required>
+                        </div>
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-class">班級：</label>
+                            <input type="text" id="admin-class" required>
+                        </div>
+                        <div style="flex: 1 1 100%;">
+                             <label for="admin-email">電子郵件：</label>
+                            <input type="text" id="admin-email" placeholder="li**g@qimei.edu.tw">
+                        </div>
+                    </div>
+
+                    <h4>活動/成績項目管理</h4>
+                    <table id="admin-tasks-table">
+                        <thead>
+                            <tr>
+                                <th>項目名稱</th>
+                                <th>狀態</th>
+                                <th>教師留言狀態</th>
+                                <th>留言紀錄</th> 
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-tasks-tbody">
+                        </tbody>
+                    </table>
+                    
+                    <button type="button" id="add-task-btn" class="secondary-btn" style="width: auto; margin-left: 0;">+ 新增項目</button>
+
+                    <div class="form-actions">
+                        <button type="submit" id="form-submit-btn" class="primary-btn">新增學生</button>
+                        <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn" style="background-color: #2ecc71;">新增學生 (切換)</button>
+                        <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="admin-card">
+                <h3>所有學生列表</h3>
+                <table id="student-list-table">
+                    <thead>
+                        <tr>
+                            <th>學號</th>
+                            <th>姓名</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-list-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <button onclick="teacherLogout()" class="logout-btn">登出教師介面</button>
+        </div>
     </div>
     
-    <div id="comment-history-modal" class="modal hidden">
+    <div id="comment-history-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h4>[<span id="modal-task-name"></span>] 留言與審核</h4>
+            <h2>項目留言：<span id="modal-task-name"></span></h2>
             
-            <div id="modal-comments-list"></div>
-            
-            <div id="modal-student-comment-area" class="info-card">
-                <h5>新增留言</h5>
-                <textarea id="modal-new-student-comment" rows="3" placeholder="輸入您的留言..."></textarea>
-                <button onclick="submitCommentFromModal()" class="primary-btn">提交留言</button> 
-                <p style="font-size: 0.8em; color: #7f8c8d; margin-top: 5px;">* 留言限制 300 字。</p>
+            <div id="modal-comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                </div>
+
+            <div id="modal-student-comment-area">
+                <h4>新增留言</h4>
+                <textarea id="modal-new-student-comment" placeholder="輸入您的留言..." rows="3" maxlength="300"></textarea>
+                <button type="button" onclick="submitCommentFromModal()" class="primary-btn" style="width: auto; padding: 5px 15px; margin-top: 0;">提交留言</button>
             </div>
-            
-            <div id="modal-submission-area">
-                <p class="error-message" id="modal-submission-message"></p>
-                <button onclick="confirmSubmissionFromModal()" class="primary-btn submission-btn">提交完成/重新審核</button>
+
+            <div id="modal-submission-area" class="submission-area hidden">
+                <p id="modal-submission-message"></p>
+                <button type="button" onclick="confirmSubmissionFromModal()" class="submission-btn primary-btn" style="width: auto;">提交完成/重新審核</button>
             </div>
+
         </div>
     </div>
 
