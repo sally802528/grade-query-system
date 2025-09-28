@@ -13,12 +13,48 @@ let originalStudentData = {};
 
 // --- 輔助函數：資料持久化與預設資料 (保持不變) ---
 
+const DEFAULT_STUDENTS = {
+    'A123456789': { 
+        account: 'A123456789', 
+        name: '林書恩',
+        school: '奇美高中',
+        class: '二年甲班',
+        email: 'li***g@qimei.edu.tw',
+        tasks: [
+            { item: "國文期中考", status: "已認證", teacherComment: "", pendingReview: false,
+              studentComments: [
+                  { id: 1, time: new Date(Date.now() - 3600000).toLocaleString(), role: "教師", text: "作業完成得不錯！", isTeacher: true, isBlocked: false, isRecalled: false, recalledBy: null, blockedBy: null },
+                  { id: 2, time: new Date(Date.now() - 1800000).toLocaleString(), role: "學生", text: "謝謝老師！我下次會更好。", isTeacher: false, isBlocked: false, isRecalled: false, recalledBy: null, blockedBy: null },
+              ]
+            },
+            { item: "數學作業繳交", status: "未完成", teacherComment: "", pendingReview: false,
+              studentComments: [
+                  { id: 3, time: new Date(Date.now() - 7200000).toLocaleString(), role: "學生", text: "我還在努力寫，請問截止日是什麼時候？", isTeacher: false, isBlocked: false, isRecalled: false, recalledBy: null, blockedBy: null }
+              ] 
+            },
+        ]
+    },
+    'B987654321': { 
+        account: 'B987654321', 
+        name: '陳美玲',
+        school: '奇美高中',
+        class: '二年甲班',
+        email: 'ch***n@qimei.edu.tw',
+        tasks: [
+            { item: "期末專題報告", status: "認證失敗", teacherComment: "", pendingReview: false,
+              studentComments: [
+                  { id: 4, time: new Date(Date.now() - 1200000).toLocaleString(), role: "教師", text: "報告格式錯誤，請修改後重新提交。", isTeacher: true, isBlocked: false, isRecalled: false, recalledBy: null, blockedBy: null }
+              ] 
+            },
+        ]
+    }
+};
+
 function loadStudentData() {
     const storedData = localStorage.getItem(STORAGE_KEY);
     try {
         const data = JSON.parse(storedData);
         if (data && Object.keys(data).length > 0) {
-            // ... (數據清洗邏輯保持不變)
             Object.values(data).forEach(s => {
                 s.tasks.forEach(t => {
                      t.studentComments = t.studentComments || []; 
@@ -54,7 +90,7 @@ function loadOriginalStudentData(account) {
 }
 
 function isFormModified() {
-    // ... (isFormModified 邏輯保持不變，用於切換時的警告)
+    // 檢查表單是否有修改的邏輯（保持不變）
     const originalAccount = document.getElementById('student-original-account').value;
     
     if (!originalStudentData || originalStudentData.account !== originalAccount) {
@@ -98,8 +134,7 @@ function isFormModified() {
 }
 
 
-/** * 強化修正 1: 確保切換到新增學生介面時，表單被徹底清空
- */
+/** 修正 1: 徹底清空後切換到新增模式 */
 window.switchToNewStudentMode = function() {
     const isEditingMode = document.getElementById('form-submit-btn').textContent === '更新學生資料';
     
@@ -109,7 +144,6 @@ window.switchToNewStudentMode = function() {
         }
     }
     
-    // 呼叫 resetForm 進行清空和模式切換
     resetForm(false); 
     
     alert("已切換到新增學生介面，請開始填寫新資料。");
@@ -233,8 +267,9 @@ function handleTeacherLoginFormSubmit(event) {
         document.getElementById('admin-container').classList.remove('hidden');
         displayStudentList();
         
-        // 確保進入管理介面時是新增模式 (並隱藏切換按鈕)
+        // 確保進入管理介面時是新增模式 (並新增一個空白項目)
         resetForm(false); 
+        addTaskRow();
     } else {
         errorMessage.textContent = '管理密碼錯誤，請重試。';
     }
@@ -275,13 +310,14 @@ function loadTasksToAdminTable(tasks, account = '') {
     });
 }
 
-/** * 強化修正 2: 移除複雜的名稱檢查，改為點擊留言時強制儲存。
- * 並修復新增模式下，如果表格是空的，按鈕無法啟用的問題。
- */
+/** 修正 2: 重新設計留言按鈕邏輯，確保只有在已儲存的狀態下才能開啟 */
 function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', studentComments: [], pendingReview: false }, account = '') {
     const tbody = document.getElementById('admin-tasks-tbody');
     const row = tbody.insertRow();
     
+    // 儲存原始項目名稱作為識別 (用於判斷是否被修改)
+    row.setAttribute('data-original-item-name', task.item);
+
     // 1. 項目名稱
     const itemCell = row.insertCell();
     const itemInput = document.createElement('input');
@@ -328,41 +364,32 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     
     
     if (account === '') {
-        // 新增學生模式且還沒儲存 (account 為空)
+        // 新增學生模式且還沒儲存
         historyBtn.textContent = '留言 (0)';
         historyBtn.style.backgroundColor = '#ccc';
         historyBtn.onclick = () => {
              alert('請先填寫學號並點擊「新增學生」儲存後，才能針對項目進行留言操作。');
         };
     } else {
-        // 編輯模式，點擊留言時強制執行儲存，然後再開啟彈窗
+        // 編輯模式
         historyBtn.onclick = () => {
-             const isEditingMode = document.getElementById('form-submit-btn').textContent === '更新學生資料';
+             const currentAccount = document.getElementById('admin-account').value.trim();
+             const currentItemName = itemInput.value.trim();
+             const originalItemName = row.getAttribute('data-original-item-name');
              
-             if (itemInput.value.trim() === '') {
-                 alert('項目名稱不能為空，請填寫後再試！');
+             if (!currentItemName) {
+                 alert('項目名稱不能為空！');
                  return;
              }
-
-             if (isEditingMode) {
-                 // 模擬點擊「更新學生資料」進行儲存
-                 // 注意: handleStudentFormSubmit 需要一個假的 Event 對象，但我們直接呼叫它
-                 // 為了安全，我們檢查是否已更改
-                 if (isFormModified()) {
-                      // 如果有修改，強制提交
-                      const result = handleStudentFormSubmit(new Event('submit')); 
-                      if (result === false) return; // 提交失敗則退出
-                 }
-                 
-                 // 無論是否修改，都用最新的資料開啟留言區
-                 // 確保 currentAccount 使用的是最新的 account
-                 const currentAccount = document.getElementById('admin-account').value.trim();
-                 showCommentModal(currentAccount, itemInput.value.trim(), true); 
-                 
-             } else {
-                 // 不應該進入此邏輯 (如果 account 不為空，就一定是編輯模式)
-                 alert('請先儲存學生資料！'); 
+             
+             // 如果學號被更改 (從 A123 變成 A1234) 或項目名稱與原始名稱不符
+             if (currentAccount !== account || currentItemName !== originalItemName) {
+                  alert('您已更改學生學號或項目名稱，請先點擊**「更新學生資料」**儲存後，才能針對此最新資料開啟留言區。');
+                  return;
              }
+             
+             // 確認學號和項目名稱都與儲存中的資料匹配，才開啟留言區
+             showCommentModal(currentAccount, currentItemName, true); 
         };
     }
     
@@ -400,48 +427,36 @@ function handleAddTaksClick() {
     addTaskRow(undefined, currentAccount);
 }
 
-/** * 強化修正 1: 重設/取消編輯邏輯 (確保清空表格並至少有一行空白項目)
- * @param {boolean} showAlert - 是否顯示提示訊息
- */
+/** 修正 1: 確保所有欄位徹底清空 */
 window.resetForm = function(showAlert = true) {
-    const originalAccount = document.getElementById('student-original-account').value;
-    const isEditingMode = document.getElementById('form-submit-btn').textContent === '更新學生資料' && originalAccount;
-
-    // 清空所有欄位
+    
+    // 1. 清空所有欄位
     document.getElementById('admin-tasks-tbody').innerHTML = ''; 
-    document.getElementById('student-original-account').value = ''; 
+    document.getElementById('student-original-account').value = ''; // 隱藏欄位，用於記錄原始學號
     document.getElementById('admin-account').value = ''; 
     document.getElementById('admin-name').value = ''; 
     document.getElementById('admin-school').value = '';
     document.getElementById('admin-class').value = '';
     document.getElementById('admin-email').value = '';
     
-    // 立即切換為新增模式
+    // 2. 切換為新增模式
     document.getElementById('form-submit-btn').textContent = '新增學生';
     document.getElementById('switch-to-new-student-btn').classList.add('hidden');
     originalStudentData = null; // 清除快照
 
-    // 確保新增模式下至少有一行空白項目可以填寫
+    // 3. 確保新增模式下至少有一行空白項目可以填寫
     addTaskRow(); 
     
     if (showAlert) alert("設定項已清空，已切換回新增學生模式。");
 }
 
-/** * 修正 submit 函數，使其可以被強制呼叫，並返回成功與否
- */
 function handleStudentFormSubmit(event) {
-    // 檢查是否為實際的提交事件。如果是，阻止預設行為
     if (event && event.preventDefault) {
         event.preventDefault();
     }
     
     const isActualSubmit = event && event.type === 'submit';
     
-    // 如果不是實際的點擊提交，且資料未修改，則返回成功 (避免不必要的彈窗和儲存)
-    if (!isActualSubmit && !isFormModified()) {
-        return true; 
-    }
-
     if (isActualSubmit && !confirm("按下確定後將更新學生資料，移除/變更的操作將無法復原。請再次確認。")) {
         return false;
     }
@@ -472,6 +487,7 @@ function handleStudentFormSubmit(event) {
             return; 
         }
 
+        // 從隱藏屬性中讀取留言，確保不會遺失歷史留言
         const originalComments = JSON.parse(row.getAttribute('data-original-comments') || '[]');
         const pendingReview = row.getAttribute('data-pending-review') === 'true';
         
@@ -526,7 +542,6 @@ function handleStudentFormSubmit(event) {
 
 
 function displayStudentList() {
-    // ... (displayStudentList 邏輯保持不變)
     const tbody = document.getElementById('student-list-tbody'); 
     if (!tbody) return; 
 
@@ -566,12 +581,13 @@ function removeStudent(account, name) {
     }
 }
 
-// --- 整合式留言/審核彈窗邏輯 (保持不變) ---
+// --- 整合式留言/審核彈窗邏輯 ---
 
 function getStudentName(account) {
     return students[account]?.name || '未知學生';
 }
 
+/** 修正 2: 這裡的 task 查找必須依賴於已儲存的資料 */
 function getTask(account, itemName) {
     const student = students[account];
     if (!student) return null;
@@ -663,8 +679,7 @@ window.showCommentModal = function(account, itemName, isModalAdminMode) {
     const task = getTask(account, itemName);
 
     if (!task) {
-        // 修正 2: 這裡的提示應該只是說明找不到資料
-        alert("找不到該項目或學生資料！這通常表示資料儲存有誤。");
+        alert("找不到該項目或學生資料！請確保學號和項目名稱已儲存。");
         return;
     }
     
@@ -860,7 +875,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('teacher-login-btn').addEventListener('click', handleTeacherLoginClick);
     document.getElementById('teacher-login-form').addEventListener('submit', handleTeacherLoginFormSubmit);
     
-    // 監聽 student-form 提交
     document.getElementById('student-form').addEventListener('submit', handleStudentFormSubmit);
     
     document.getElementById('add-task-btn').addEventListener('click', handleAddTaksClick);
