@@ -1,276 +1,63 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成績查詢與管理系統 - 修復版</title>
-    <style>
-        /* 修復問題 7: 介面重新設計/一致性 */
-        body {
-            font-family: 'Segoe UI', '微軟正黑體', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-            margin-top: 0;
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #34495e;
-        }
-        input[type="text"], input[type="password"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-        button, .primary-btn, .secondary-btn, .logout-btn, .danger-btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        .primary-btn {
-            background-color: #3498db; /* 藍色 */
-            color: white;
-            width: 100%;
-        }
-        .primary-btn:hover {
-            background-color: #2980b9;
-        }
-        .secondary-btn {
-            background-color: #95a5a6; /* 灰色 */
-            color: white;
-        }
-        .secondary-btn:hover {
-            background-color: #7f8c8d;
-        }
-        .logout-btn {
-            background-color: #e74c3c;
-            color: white;
-            margin-top: 20px;
-        }
-        .logout-btn:hover {
-            background-color: #c0392b;
-        }
-        .danger-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .hidden {
-            display: none;
-        }
-        .error {
-            color: #e74c3c;
-            margin-top: -10px;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        .result-card, .admin-card {
-            background: #fdfdfd;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f0f3f4;
-            color: #34495e;
-            font-weight: 700;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .status-已認證 { color: #2ecc71; font-weight: bold; }
-        .status-認證失敗 { color: #e74c3c; font-weight: bold; }
-        .status-審核中 { color: #f39c12; font-weight: bold; }
-        .status-未完成 { color: #3498db; font-weight: bold; }
-        
-        /* 教師介面特定樣式 */
-        .form-group-inline {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .form-group-inline > div {
-            flex: 1 1 auto;
-            min-width: calc(50% - 7.5px);
-        }
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            /* 確保按鈕寬度一致 */
-        }
-        .form-actions button {
-            flex: 1;
-            width: auto;
-            margin: 0;
-        }
-
-        /* 調整新增學生按鈕的綠色樣式 (符合截圖) */
-        #switch-to-new-student-btn {
-            background-color: #2ecc71; 
-            color: white;
-        }
-        /* 調整新增項目按鈕的灰色樣式 (符合截圖) */
-        #add-task-btn {
-            background-color: #95a5a6;
-            color: white;
-            width: auto;
-            margin-left: 0;
-        }
-        
-        /* Modal 樣式 */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 100; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(0,0,0,0.4); 
-            padding-top: 60px;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 80%; 
-            max-width: 600px;
-            border-radius: 10px;
-            position: relative;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-        }
-        .comment {
-            border: 1px solid #eee;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            position: relative;
-        }
-        .comment-teacher {
-            background-color: #eaf2f8; 
-            border-left: 5px solid #3498db;
-        }
-        .comment-student {
-            background-color: #f4f6f7; 
-            border-left: 5px solid #2ecc71;
-        }
-        .comment-recalled, .comment-blocked {
-            background-color: #fcf8e3; 
-            color: #8a6d3b;
-            border-left-color: #f39c12;
-            text-align: center;
-        }
-        .comment-actions button {
-            width: auto;
-            padding: 3px 8px;
-            font-size: 0.75em;
-            margin: 0 0 0 5px; 
-            vertical-align: top;
-        }
-    </style>
+    <title>成績查詢與管理系統 - 完整版</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
-
     <div class="container">
-        
+
         <div id="login-container">
             <h2>成績查詢登入</h2>
             <form id="login-form">
                 <label for="school">學校名稱：</label>
-                <input type="text" id="school" value="奇美高中" required>
-                <div class="form-group-inline">
-                    <div style="width: 50%;">
-                        <label for="class">班級：</label>
-                        <input type="text" id="class" value="二年甲班" required>
-                    </div>
-                    <div style="width: 50%;">
-                        <label for="account">學號：</label>
-                        <input type="text" id="account" required>
-                    </div>
-                </div>
+                <input type="text" id="school" value="永靖高工" required>
+                
+                <label for="class">班級：</label>
+                <input type="text" id="class" value="資訊二" required>
+                
+                <label for="account">學號：</label>
+                <input type="text" id="account" placeholder="請輸入學號" required>
+                
                 <label for="password">密碼 (Qimei@admin)：</label>
-                <input type="password" id="password" required>
+                <input type="password" id="password" placeholder="輸入查詢密碼或學號密碼" required>
+                
+                <p id="login-error" class="error hidden">帳號、班級或密碼錯誤。</p>
                 <button type="submit" class="primary-btn">登入查詢</button>
-                <p id="error-message" class="error"></p>
             </form>
-            <button id="teacher-login-btn" onclick="handleTeacherLoginClick()" class="secondary-btn" style="background-color: orange; color: white;">我是教師，點擊登入管理介面</button>
+            <button type="button" id="teacher-login-btn" onclick="showAdminLogin()">我是教師，點擊登入管理介面</button>
         </div>
 
-        <div id="teacher-login-container" class="hidden">
+        <div id="admin-login-container" class="hidden">
             <h2>教師管理員登入</h2>
-            <form id="teacher-login-form">
-                <label for="teacher-password">管理密碼 (Teacher@admin)：</label>
-                <input type="password" id="teacher-password" name="teacher-password" required>
-                <button type="submit" class="primary-btn">登入管理</button>
-                <button type="button" onclick="hideTeacherLogin()" class="secondary-btn">返回學生登入</button>
-                <p id="teacher-error-message" class="error"></p>
+            <form id="admin-login-form">
+                <label for="admin-password">管理密碼 (Teacher@admin)：</label>
+                <input type="password" id="admin-password" required>
+                <p id="admin-login-error" class="error hidden">管理密碼錯誤。</p>
+                <button type="submit" class="primary-btn" style="max-width: 100%;">登入管理</button>
             </form>
+            <button type="button" class="secondary-btn" onclick="showStudentLogin()">返回學生登入</button>
         </div>
 
         <div id="result-container" class="hidden">
             <h2>查詢結果</h2>
+            
             <div class="result-card">
                 <h3>學生基本資料</h3>
-                <p><span class="info-label">學號：</span><span id="display-student-id"></span></p>
-                <p><span class="info-label">姓名：</span><span id="display-name"></span></p>
+                <div id="basic-info">
+                    <p>學號：<span id="result-account"></span></p>
+                    <p>姓名：<span id="result-name"></span></p>
+                    <p>學校：<span id="result-school"></span></p>
+                    <p>班級：<span id="result-class"></span></p>
+                    <p>電子郵件：<span id="result-email"></span></p>
                 </div>
+            </div>
 
             <div class="result-card">
                 <h3>學期成績與活動完成度</h3>
-                <table>
+                <table id="tasks-table-student">
                     <thead>
                         <tr>
                             <th>項目</th>
@@ -278,110 +65,105 @@
                             <th>留言 / 操作</th>
                         </tr>
                     </thead>
-                    <tbody id="task-list">
-                    </tbody>
+                    <tbody>
+                        </tbody>
                 </table>
             </div>
-            
-            <button onclick="logout()" class="logout-btn">登出查詢</button>
+
+            <button type="button" class="logout-btn" onclick="logout()">登出查詢</button>
         </div>
-        
+
         <div id="admin-container" class="hidden">
             <h2>學生資料管理介面</h2>
 
-            <div class="admin-card">
-                <h3>新增 / 編輯學生</h3>
+            <div id="add-edit-student-card" class="admin-card">
+                <h3 id="student-form-title">新增 / 編輯學生</h3>
                 <form id="student-form">
-                    <input type="hidden" id="student-original-account">
-                    
                     <div class="form-group-inline">
                         <div style="flex: 1 1 45%;">
-                            <label for="admin-account">學號 (唯一)：</label>
-                            <input type="text" id="admin-account" required> 
+                            <label for="admin-account">帳號 (唯一)：</label>
+                            <input type="text" id="admin-account" placeholder="輸入學號" required>
                         </div>
                         <div style="flex: 1 1 45%;">
                             <label for="admin-name">姓名 (遮擋前)：</label>
-                            <input type="text" id="admin-name" required> 
-                        </div>
-                        <div style="flex: 1 1 45%;">
-                            <label for="admin-school">學校名稱：</label>
-                            <input type="text" id="admin-school" value="奇美高中" required>
-                        </div>
-                        <div style="flex: 1 1 45%;">
-                            <label for="admin-class">班級：</label>
-                            <input type="text" id="admin-class" value="二年甲班" required>
-                        </div>
-                        <div style="flex: 1 1 100%;">
-                             <label for="admin-email">電子郵件：</label>
-                            <input type="text" id="admin-email" placeholder="li**g@qimei.edu.tw">
+                            <input type="text" id="admin-name" placeholder="輸入學生全名" required>
                         </div>
                     </div>
 
-                    <h4>活動/成績項目管理</h4>
-                    <table id="admin-tasks-table">
+                    <div class="form-group-inline">
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-school">學校名稱：</label>
+                            <input type="text" id="admin-school" value="永靖高工" required>
+                        </div>
+                        <div style="flex: 1 1 45%;">
+                            <label for="admin-class">班級：</label>
+                            <input type="text" id="admin-class" value="資訊二" required>
+                        </div>
+                    </div>
+
+                    <label for="admin-email">電子郵件：</label>
+                    <input type="text" id="admin-email" placeholder="電子郵件（用於遮擋顯示）" required>
+                    
+                    <h4 style="margin-top: 30px;">活動/成績項目管理</h4>
+                    <table id="tasks-table-admin">
                         <thead>
                             <tr>
                                 <th>項目名稱</th>
                                 <th>狀態</th>
                                 <th>教師留言狀態</th>
-                                <th>留言紀錄</th> 
+                                <th>留言記錄</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-tasks-tbody">
-                        </tbody>
+                        <tbody>
+                            </tbody>
                     </table>
                     
-                    <button type="button" id="add-task-btn" onclick="handleAddTaksClick()" class="secondary-btn">+ 新增項目</button>
-
+                    <button type="button" id="add-task-btn" onclick="addTaskRow()">+ 新增項目</button>
+                    
                     <div class="form-actions">
-                        <button type="submit" id="form-submit-btn" class="primary-btn">新增學生</button>
-                        
+                        <button type="submit" id="submit-student-btn" class="primary-btn">更新學生資料</button>
                         <button type="button" id="switch-to-new-student-btn" onclick="switchToNewStudentMode()" class="primary-btn">新增學生 (切換)</button>
-                        
-                        <button type="button" id="reset-form-btn" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
+                        <button type="button" onclick="resetForm()" class="secondary-btn">重設/取消編輯</button>
                     </div>
                 </form>
             </div>
 
-            <div class="admin-card">
-                <h3>所有學生列表</h3>
+            <div class="admin-card" style="margin-top: 30px;">
+                <h3 id="student-list-title">所有學生列表</h3>
                 <table id="student-list-table">
                     <thead>
                         <tr>
-                            <th>學號</th>
+                            <th>帳號</th>
                             <th>姓名</th>
                             <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody id="student-list-tbody">
-                    </tbody>
+                    <tbody>
+                        </tbody>
                 </table>
             </div>
 
-            <button onclick="teacherLogout()" class="logout-btn">登出教師介面</button>
+            <button type="button" class="logout-btn" onclick="adminLogout()">登出教師介面</button>
         </div>
     </div>
-    
-    <div id="comment-history-modal" class="modal">
+
+    <div id="comment-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2>項目留言：<span id="modal-task-name"></span></h2>
+            <h3 id="modal-title">項目留言</h3>
             
-            <div id="modal-comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+            <div id="comment-history" style="max-height: 300px; overflow-y: auto; padding-right: 15px;">
                 </div>
 
-            <div id="modal-comment-area">
-                <h4>新增留言</h4>
-                <textarea id="modal-new-comment" placeholder="輸入您的留言..." rows="3" maxlength="300"></textarea>
-                <button type="button" id="submit-comment-btn" onclick="submitCommentFromModal()" class="primary-btn" style="width: auto; padding: 5px 15px; margin-top: 0;">提交留言</button>
+            <div id="new-comment-area" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 10px;">新增留言</h4>
+                <textarea id="comment-input" placeholder="輸入您的留言..." rows="4"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="button" id="submit-comment-btn" class="primary-btn">提交留言</button>
+                </div>
             </div>
-
-            <div id="modal-submission-area" class="submission-area hidden" style="text-align: center; padding: 15px; border-top: 1px solid #eee; margin-top: 15px;">
-                <p id="modal-submission-message"></p>
-                <button type="button" onclick="confirmSubmissionFromModal()" class="submission-btn primary-btn" style="width: auto;">提交完成/重新審核</button>
-            </div>
-
+            
         </div>
     </div>
 
