@@ -67,8 +67,12 @@ function loadStudentData() {
             return data;
         }
     } catch (e) { console.error("Failed to parse stored data, using default.", e); }
-    saveStudentData(DEFAULT_STUDENTS);
-    return DEFAULT_STUDENTS;
+    // 確保只在沒有儲存資料時才使用預設資料
+    if (!storedData) {
+        saveStudentData(DEFAULT_STUDENTS);
+        return DEFAULT_STUDENTS;
+    }
+    return {}; // 避免 JSON.parse 失敗但有資料時錯誤地使用 DEFAULT_STUDENTS
 }
 students = loadStudentData();
 
@@ -87,7 +91,7 @@ function loadOriginalStudentData(account) {
     }
 }
 
-/** 檢查當前表單資料是否與原始資料不一致 (用於修正 3) */
+/** 檢查當前表單資料是否與原始資料不一致 */
 function isFormModified() {
     const originalAccount = document.getElementById('student-original-account').value;
     
@@ -117,6 +121,11 @@ function isFormModified() {
         const itemInput = row.querySelector('.task-item-input');
         const statusSelect = row.querySelector('.task-status-select');
         
+        // 確保 row 和 originalStudentData.tasks[i] 都存在
+        if (!itemInput || !statusSelect || !originalStudentData.tasks[i]) {
+            continue; 
+        }
+
         if (itemInput.value.trim() !== originalStudentData.tasks[i].item || 
             statusSelect.value !== originalStudentData.tasks[i].status) {
             return true;
@@ -132,7 +141,9 @@ function isFormModified() {
     return false; // 資料沒有明顯變動
 }
 
-/** 修正 2, 3: 切換到新增學生介面 (帶有警告檢查) */
+/** * 修正 2: 切換到新增學生介面 (帶有警告檢查) 
+ * 修正 3: 確保點擊後強制切換並清空
+ */
 window.switchToNewStudentMode = function() {
     const isEditingMode = document.getElementById('form-submit-btn').textContent === '更新學生資料';
     
@@ -142,10 +153,11 @@ window.switchToNewStudentMode = function() {
         }
     }
     
-    // 修正 3: 強制執行重設並切換到新增模式
+    // 修正 3: 強制執行重設並切換到新增模式 (解決點擊兩次問題)
     resetForm(false); 
     document.getElementById('form-submit-btn').textContent = '新增學生';
     document.getElementById('student-original-account').value = '';
+    
     // 修正 2: 隱藏切換按鈕
     document.getElementById('switch-to-new-student-btn').classList.add('hidden'); 
     
@@ -265,7 +277,7 @@ function handleTeacherLoginFormSubmit(event) {
     const errorMessage = document.getElementById('teacher-error-message');
 
     if (password === TEACHER_PASSWORD) {
-        // 修正 4: 登入成功
+        // 登入成功
         errorMessage.textContent = '';
         isAdminMode = true; 
         document.getElementById('teacher-login-container').classList.add('hidden');
@@ -317,9 +329,12 @@ function loadTasksToAdminTable(tasks, account = '') {
     });
 }
 
+/** * 修正 2: 調整留言紀錄按鈕的點擊邏輯，避免未儲存就開啟留言區
+ */
 function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', studentComments: [], pendingReview: false }, account = '') {
     const tbody = document.getElementById('admin-tasks-tbody');
     const row = tbody.insertRow();
+    const originalItemName = task.item; // 記錄原始項目名稱
     
     // 1. 項目名稱
     const itemCell = row.insertCell();
@@ -346,7 +361,6 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
 
     // 3. 教師留言狀態 (提示) 
     const commentCell = row.insertCell();
-    // 修正 1: 確保找到未被撤回或屏蔽的最新教師留言
     const latestTeacherComment = task.studentComments.slice().reverse().find(c => c.isTeacher && !c.isRecalled && !c.isBlocked);
     if (latestTeacherComment) {
         commentCell.textContent = latestTeacherComment.text.substring(0, 15) + '...';
@@ -359,7 +373,6 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     // 4. 留言紀錄按鈕 
     const historyCell = row.insertCell();
     const historyBtn = document.createElement('button');
-    // 修正 1: 只計算未被撤回或屏蔽的留言數量
     const activeComments = task.studentComments.filter(c => !c.isRecalled && !c.isBlocked).length;
     historyBtn.textContent = `留言 (${activeComments})`;
     historyBtn.type = 'button';
@@ -367,31 +380,34 @@ function addTaskRow(task = { item: '', status: '未完成', teacherComment: '', 
     historyBtn.style.marginTop = '0';
     historyBtn.style.padding = '5px 10px';
     
-    if (!task.item && account === '') {
+    if (account === '') {
+        // 新增學生模式且還沒儲存
         historyBtn.textContent = '留言 (0)';
         historyBtn.style.backgroundColor = '#ccc';
         historyBtn.onclick = () => {
              alert('新增項目後，請先點擊「新增學生」或「更新學生資料」儲存，才可建立留言功能。');
         };
     } else {
-        // 修正：教師介面下的點擊事件 (true 表示管理員模式)
+        // 修正 2: 教師介面下的點擊事件 (true 表示管理員模式)
         historyBtn.onclick = () => {
              const currentAccount = document.getElementById('admin-account').value.trim();
              const currentItemName = itemInput.value.trim();
-             if (currentAccount && currentItemName) {
-                 // 在編輯模式下，先嘗試更新 itemInput.value
-                 const taskIndex = Array.from(row.parentNode.children).indexOf(row);
-                 const currentStudent = students[currentAccount];
-                 
-                 // 確保 currentStudent.tasks[taskIndex] 存在且項目名稱是當前欄位值
-                 if (currentStudent && currentStudent.tasks[taskIndex] && currentStudent.tasks[taskIndex].item === currentItemName) {
-                      showCommentModal(currentAccount, currentItemName, true); 
-                 } else {
-                     // 如果項目名稱不同，表示用戶可能更改了名稱但還未存檔，使用當前的值
-                      alert('請先儲存學生資料，才能針對此項目進行留言操作。');
-                 }
+             
+             // 檢查是否為編輯模式且項目名稱有異動 (或根本沒有項目名稱)
+             if (!currentItemName) {
+                 alert('項目名稱不能為空！請填寫項目名稱後儲存。');
+                 return;
+             }
+             
+             // 檢查目前表格中的項目名稱與儲存中的項目名稱是否一致
+             // 只有在編輯模式下，且 itemInput.value.trim() !== originalItemName 才需要警告
+             if (document.getElementById('form-submit-btn').textContent === '更新學生資料' && currentItemName !== originalItemName) {
+                  alert('您已更改項目名稱，請先點擊「更新學生資料」儲存後，才能針對此新名稱的項目進行留言操作。');
+             } else if (currentAccount) {
+                 // 如果項目名稱與原始名稱一致，或處於新增模式但已儲存，則直接開啟
+                 showCommentModal(currentAccount, currentItemName, true); 
              } else {
-                 alert('請先填寫學號和項目名稱！'); 
+                 alert('請先儲存學生資料！'); 
              }
         };
     }
@@ -432,40 +448,29 @@ function handleAddTaksClick() {
     addTaskRow(undefined, currentAccount);
 }
 
-/** 重設/取消編輯邏輯 */
+/** * 修正 1: 重設/取消編輯邏輯 (確保清空表格)
+ * @param {boolean} showAlert - 是否顯示提示訊息
+ */
 window.resetForm = function(showAlert = true) {
     const originalAccount = document.getElementById('student-original-account').value;
     const isEditingMode = document.getElementById('form-submit-btn').textContent === '更新學生資料' && originalAccount;
 
-    if (!isEditingMode) {
-        // 新增學生模式: 清空所有欄位
-        document.getElementById('admin-tasks-tbody').innerHTML = '';
-        document.getElementById('student-original-account').value = '';
-        document.getElementById('admin-account').value = ''; 
-        document.getElementById('admin-name').value = ''; 
-        document.getElementById('admin-school').value = '';
-        document.getElementById('admin-class').value = '';
-        document.getElementById('admin-email').value = '';
-        document.getElementById('form-submit-btn').textContent = '新增學生';
-        
-        // 修正 2: 新增模式時隱藏「新增學生 (切換)」按鈕
-        document.getElementById('switch-to-new-student-btn').classList.add('hidden');
-        
-        if (showAlert) alert("設定項已清空。");
-    } else {
-        // 編輯模式: 恢復至未更改的狀態
-        if (originalStudentData && originalStudentData.account === originalAccount) {
-             // 將原始資料寫回目前的 students 結構，並重新載入編輯介面
-             students[originalAccount] = JSON.parse(JSON.stringify(originalStudentData));
-             editStudent(originalAccount); 
-             if (showAlert) alert("資料已恢復至未更改的狀態。");
-        } else {
-             // 如果沒有原始資料快照，則重新載入儲存的資料
-             students = loadStudentData();
-             editStudent(originalAccount); 
-             if (showAlert) alert("資料已恢復。");
-        }
-    }
+    // 清空基本資料
+    document.getElementById('admin-tasks-tbody').innerHTML = ''; // 修正 1: 確保清空項目表格
+    document.getElementById('student-original-account').value = '';
+    document.getElementById('admin-account').value = ''; 
+    document.getElementById('admin-name').value = ''; 
+    document.getElementById('admin-school').value = '';
+    document.getElementById('admin-class').value = '';
+    document.getElementById('admin-email').value = '';
+    
+    // 切換為新增模式
+    document.getElementById('form-submit-btn').textContent = '新增學生';
+    document.getElementById('switch-to-new-student-btn').classList.add('hidden');
+    originalStudentData = null; // 清除快照
+
+    if (showAlert) alert("設定項已清空，已切換回新增學生模式。");
+
 }
 
 function handleStudentFormSubmit(event) {
@@ -541,14 +546,8 @@ function handleStudentFormSubmit(event) {
 
     displayStudentList();
     
-    // 重新載入以更新 originalStudentData
-    if (originalAccount || document.getElementById('form-submit-btn').textContent === '更新學生資料') {
-         editStudent(newAccount);
-    } else {
-        // 修正 2: 處理新增模式下的按鈕隱藏
-        resetForm(false); 
-        document.getElementById('switch-to-new-student-btn').classList.add('hidden');
-    }
+    // 重新載入以更新 originalStudentData，並保持編輯模式
+    editStudent(newAccount);
 }
 
 
@@ -598,6 +597,7 @@ function getStudentName(account) {
     return students[account]?.name || '未知學生';
 }
 
+/** 修正 2: 查找項目時使用儲存中的資料 */
 function getTask(account, itemName) {
     const student = students[account];
     if (!student) return null;
@@ -620,7 +620,6 @@ function renderComment(comment, isModalAdminMode) {
         // 修正 1: 屏蔽或撤回的訊息，隱藏原始留言內容，只顯示追溯訊息
         commentDiv.style.backgroundColor = '#fcf8e3'; // 輕微警告色
         
-        // 修正 2: 顯示執行操作者
         // 判斷操作者名稱：若已記錄則使用記錄的值，否則根據角色判斷
         const operatorName = comment.recalledBy || comment.blockedBy || (comment.isTeacher ? '教師' : getStudentName(currentTaskAccount));
         
@@ -656,7 +655,6 @@ function renderComment(comment, isModalAdminMode) {
     const actionContainer = document.createElement('div');
     actionContainer.className = 'comment-actions';
     
-    // 修正 1: 判斷按鈕顯示邏輯
     let canShowAction = false;
     
     // 1. 教師模式：教師可以撤回自己的留言，並屏蔽學生的留言
@@ -699,7 +697,7 @@ function renderComment(comment, isModalAdminMode) {
     return commentDiv;
 }
 
-/** * 顯示留言彈窗
+/** * 修正 2: 顯示留言彈窗
  * @param {string} account - 學號
  * @param {string} itemName - 項目名稱
  * @param {boolean} isModalAdminMode - 是否為管理員模式
@@ -710,7 +708,8 @@ window.showCommentModal = function(account, itemName, isModalAdminMode) {
     const task = getTask(account, itemName);
 
     if (!task) {
-        alert("找不到該項目或學生資料！");
+        // 修正 2: 找不到項目，給出明確提示
+        alert("找不到該項目或學生資料！這可能因為項目名稱被修改，但尚未點擊「更新學生資料」儲存。請先儲存後再試。");
         return;
     }
     
@@ -719,7 +718,7 @@ window.showCommentModal = function(account, itemName, isModalAdminMode) {
     commentsList.innerHTML = '';
     
     if (task.studentComments && task.studentComments.length > 0) {
-        // 修正 1: 傳遞 isModalAdminMode 給 renderComment
+        // 傳遞 isModalAdminMode 給 renderComment
         task.studentComments.slice().reverse().forEach(comment => {
             commentsList.appendChild(renderComment(comment, isModalAdminMode));
         });
@@ -732,6 +731,7 @@ window.showCommentModal = function(account, itemName, isModalAdminMode) {
     const newCommentTextarea = document.getElementById('modal-new-student-comment');
     
     newCommentTextarea.placeholder = isModalAdminMode ? "輸入給學生的留言..." : "輸入您的留言...";
+    newCommentTextarea.value = ''; // 確保每次開啟都是空的
     
     if (isModalAdminMode) {
         // 教師模式
@@ -777,7 +777,7 @@ window.submitCommentFromModal = function() {
     const task = getTask(currentTaskAccount, currentTaskItem);
     if (!task) return;
     
-    // 修正 1: 判斷當前模式是教師還是學生
+    // 判斷當前模式是教師還是學生
     const isTeacherRole = document.getElementById('admin-container').classList.contains('hidden') ? false : isAdminMode;
 
     const newComment = {
@@ -793,11 +793,6 @@ window.submitCommentFromModal = function() {
     };
 
     task.studentComments.push(newComment);
-    
-    // 教師留言更新，不需要 studentComments
-    // if (isTeacherRole && !task.teacherComment) {
-    //      task.teacherComment = newComment.text; 
-    // }
     
     saveStudentData(students);
     newCommentTextarea.value = '';
@@ -821,14 +816,16 @@ window.submitCommentFromModal = function() {
 window.recallComment = function(commentId, account, itemName, isModalAdminMode) {
     if (!confirm("確定要撤回此留言嗎？")) return;
     const task = getTask(account, itemName);
+    if (!task) return; // 修正 2: 找不到 task 時返回
+    
     const comment = task.studentComments.find(c => c.id === commentId);
     
-    // 修正 1: 確保只有發送者能撤回
+    // 確保只有發送者能撤回
     const canRecall = (comment.isTeacher && isModalAdminMode) || (!comment.isTeacher && !isModalAdminMode);
     
     if (comment && canRecall) {
         comment.isRecalled = true;
-        // 修正 2: 記錄學生姓名或教師角色
+        // 記錄學生姓名或教師角色
         comment.recalledBy = isModalAdminMode ? '教師' : getStudentName(account); 
         saveStudentData(students);
         showCommentModal(account, itemName, isModalAdminMode);
@@ -848,11 +845,13 @@ window.recallComment = function(commentId, account, itemName, isModalAdminMode) 
 window.blockComment = function(commentId, account, itemName, isModalAdminMode) {
     if (!isModalAdminMode || !confirm("確定要屏蔽此留言嗎？此動作將對所有使用者隱藏。")) return;
     const task = getTask(account, itemName);
+    if (!task) return; // 修正 2: 找不到 task 時返回
+    
     const comment = task.studentComments.find(c => c.id === commentId);
     
     if (comment) {
         comment.isBlocked = true;
-        // 修正 2: 僅教師能屏蔽
+        // 僅教師能屏蔽
         comment.blockedBy = '教師'; 
         saveStudentData(students);
         showCommentModal(account, itemName, isModalAdminMode);
@@ -861,7 +860,7 @@ window.blockComment = function(commentId, account, itemName, isModalAdminMode) {
 }
 
 window.confirmSubmissionFromModal = function() {
-    // 修正 1: 判斷當前模式是否為管理員
+    // 判斷當前模式是否為管理員
     const isTeacherRole = document.getElementById('admin-container').classList.contains('hidden') ? false : isAdminMode;
 
     if (isTeacherRole || !currentTaskAccount || !currentTaskItem) return;
