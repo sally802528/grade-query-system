@@ -7,7 +7,7 @@ body, html {
     padding: 0;
     height: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5; /* 輕微的背景色 */
+    background-color: #f0f2f5; 
     
     /* 實現頁面中央置中 (使用 Flexbox) */
     display: flex; 
@@ -19,9 +19,9 @@ body, html {
     background-color: white;
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 增加輕微陰影 */
-    width: 100%;
-    max-width: 400px; /* 限制登入框的寬度 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+    width: 90%; /* 使用百分比讓它更具響應性 */
+    max-width: 400px; /* 限制登入框的最大寬度 */
 }
 
 .title {
@@ -31,7 +31,7 @@ body, html {
 }
 
 /* -------------------------------------- */
-/* 2. 表單欄位樣式 */
+/* 2. 表單欄位樣式 (與前版本相同) */
 /* -------------------------------------- */
 
 .input-group {
@@ -51,30 +51,31 @@ body, html {
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    box-sizing: border-box; /* 確保 padding 不會增加總寬度 */
+    box-sizing: border-box; 
     transition: border-color 0.3s;
 }
 
 .login-form input:focus {
-    border-color: #007bff; /* 聚焦時邊框變色 */
+    border-color: #007bff; 
     outline: none;
 }
 
 /* -------------------------------------- */
-/* 3. 按鈕區塊置中與樣式 */
+/* 3. 按鈕區塊置中與樣式 (修正重點) */
 /* -------------------------------------- */
 
 .button-group {
     margin-top: 30px;
+    /* 讓按鈕在容器內**水平置中** */
     display: flex;
-    flex-direction: column; /* 讓按鈕垂直堆疊 */
-    gap: 15px; /* 按鈕之間的間距 */
-    align-items: center; /* 按鈕組內部元素水平置中 */
+    flex-direction: column; 
+    gap: 15px; 
+    align-items: center; /* **修正/精進**：確保按鈕組內部所有元素都居中 */
 }
 
 .btn {
     width: 100%;
-    max-width: 350px; /* 讓按鈕寬度適中 */
+    max-width: 350px; /* **修正/精進**：固定按鈕的最大寬度，使其在登入框內保持美觀比例 */
     padding: 12px;
     border: none;
     border-radius: 6px;
