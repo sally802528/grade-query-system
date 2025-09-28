@@ -4,8 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成績與項目查詢系統</title>
+    
     <style>
+        /* 基礎排版與功能樣式 */
         .hidden { display: none !important; }
+        .error { color: red; }
+        
+        /* 按鈕基礎樣式 */
+        .primary-btn { background-color: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .secondary-btn { background-color: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .logout-btn { background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; width: 100%; }
+        
+        /* 表格結構強化：確保欄位不會擠壓 */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        
+        /* 針對特定表格進行欄位寬度固定，以修正介面問題 */
+        /* 學生查詢結果表格 */
+        #student-view-table th:nth-child(1) { width: 35%; } /* 項目 */
+        #student-view-table th:nth-child(2) { width: 20%; } /* 狀態 */
+        #student-view-table th:nth-child(3) { width: 45%; } /* 留言 / 操作 */
+
+        /* 教師編輯表格 */
+        #admin-tasks-table th:nth-child(1) { width: 25%; } /* 項目名稱 */
+        #admin-tasks-table th:nth-child(2) { width: 15%; } /* 狀態 */
+        #admin-tasks-table th:nth-child(3) { width: 35%; } /* 教師留言狀態 */
+        #admin-tasks-table th:nth-child(4) { width: 15%; } /* 留言紀錄 */
+        #admin-tasks-table th:nth-child(5) { width: 10%; } /* 操作 */
+
+        /* 內容樣式 */
+        .info-card { padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-top: 15px; }
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%; padding: 8px; margin: 5px 0 10px 0; display: inline-block;
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .status-已認證 { color: green; font-weight: bold; }
+        .status-審核中 { color: blue; font-weight: bold; }
+        .status-認證失敗 { color: red; font-weight: bold; }
+        .status-未完成 { color: orange; font-weight: bold; }
+
+        /* 彈窗樣式 (保持前一版，確保功能可用) */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5); z-index: 1000;
@@ -21,25 +59,9 @@
             border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; border-radius: 4px;
             overflow: hidden; 
         }
-        .error { color: red; }
-        .primary-btn { background-color: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .secondary-btn { background-color: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .logout-btn { background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; width: 100%; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .info-card { padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-top: 15px; }
-        .form-group-inline > div { margin-bottom: 10px; }
-        input[type="text"], input[type="password"], textarea, select {
-            width: 100%; padding: 8px; margin: 5px 0 10px 0; display: inline-block;
-            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
-        }
         #modal-comments-list {
             max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding: 5px; border: 1px solid #ccc;
         }
-        .status-已認證 { color: green; font-weight: bold; }
-        .status-審核中 { color: blue; font-weight: bold; }
-        .status-認證失敗 { color: red; font-weight: bold; }
-        .status-未完成 { color: orange; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -112,11 +134,11 @@
                 <table id="admin-tasks-table">
                     <thead>
                         <tr>
-                            <th style="width: 25%;">項目名稱</th>
-                            <th style="width: 15%;">狀態</th>
-                            <th style="width: 35%;">教師留言狀態</th>
-                            <th style="width: 15%;">留言紀錄</th> 
-                            <th style="width: 10%;">操作</th>
+                            <th>項目名稱</th>
+                            <th>狀態</th>
+                            <th>教師留言狀態</th>
+                            <th>留言紀錄</th> 
+                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="admin-tasks-tbody">
@@ -137,9 +159,9 @@
             <table id="student-list-table">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">帳號</th>
-                        <th style="width: 35%;">姓名</th>
-                        <th style="width: 40%;">操作</th>
+                        <th>帳號</th>
+                        <th>姓名</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="student-list-tbody">
@@ -167,9 +189,9 @@
             <table id="student-view-table">
                 <thead>
                     <tr>
-                        <th style="width: 35%;">項目</th>
-                        <th style="width: 20%;">狀態</th>
-                        <th style="width: 45%;">留言 / 操作</th>
+                        <th>項目</th>
+                        <th>狀態</th>
+                        <th>留言 / 操作</th>
                     </tr>
                 </thead>
                 <tbody id="task-list">
