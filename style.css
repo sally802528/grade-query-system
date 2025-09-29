@@ -1,50 +1,196 @@
-/* style.css */
-/* 基礎樣式，確保頁面佈局清晰 */
+/* ====================================================================
+   基本設定與排版
+   ==================================================================== */
+
+:root {
+    --primary-color: #007bff; /* 主要藍色 */
+    --secondary-color: #6c757d; /* 次要灰色 */
+    --success-color: #28a745; /* 成功綠色 */
+    --danger-color: #dc3545; /* 警告紅色 */
+    --bg-light: #f8f9fa; /* 淺色背景 */
+    --border-color: #dee2e6; /* 邊框顏色 */
+    --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
 body {
-    background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
+    font-family: var(--font-family);
+    line-height: 1.6;
+    background-color: var(--bg-light);
+    color: #343a40;
+    padding: 20px;
 }
 
-.main-panel {
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+h2, h3 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
 }
 
-.login-panel {
-    margin-top: 100px !important;
+/* ====================================================================
+   容器與表單
+   ==================================================================== */
+
+#login-container, #student-container, #teacher-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 30px auto;
 }
 
-/* 教師管理介面佈局調整 */
-#teacher-panel .row > div {
-    padding: 15px;
+#login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-#student-list-table th, #tasks-table-admin th, #tasks-table-student th {
-    background-color: #e9ecef;
-}
-
-/* 留言樣式 (與 index.html 中的 inline style 配合) */
-.comment-box {
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 5px;
-    font-size: 0.95em;
-    position: relative;
-    overflow: hidden; /* 確保浮動按鈕不影響佈局 */
-}
-
-.comment-box p {
-    margin-top: 5px;
-}
-
-/* 留言按鈕調整 */
-.comment-box button {
-    margin-left: 5px;
-    line-height: 1; /* 確保按鈕高度合適 */
-}
-
-/* 確保輸入框和選擇框尺寸一致 */
-#tasks-table-admin input, #tasks-table-admin select {
+input[type="text"],
+input[type="password"] {
     width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* 狀態訊息 */
+#status-message {
+    margin-top: 10px;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+}
+
+/* ====================================================================
+   按鈕樣式
+   ==================================================================== */
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+    font-weight: bold;
+}
+
+/* 主要按鈕 (登入、儲存等) */
+button:not([disabled]) {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+button:not([disabled]):hover {
+    background-color: #0056b3;
+}
+
+/* 次要按鈕 (登出) */
+#student-container > button, #teacher-container > button {
+    background-color: var(--secondary-color);
+    margin-top: 20px;
+}
+
+#student-container > button:hover, #teacher-container > button:hover {
+    background-color: #5a6268;
+}
+
+/* 禁用按鈕 */
+button[disabled] {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+/* ====================================================================
+   學生查詢結果
+   ==================================================================== */
+
+#student-info {
+    border: 1px dashed var(--border-color);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+#student-info p {
+    margin: 5px 0;
+}
+
+#tasks-list h3 {
+    border-bottom: none;
+    color: #343a40;
+}
+
+.task-item {
+    background-color: var(--bg-light);
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    transition: box-shadow 0.2s;
+}
+
+.task-item:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.task-item strong {
+    color: var(--primary-color);
+}
+
+/* ====================================================================
+   教師管理介面
+   ==================================================================== */
+
+.data-input {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.data-input p {
+    margin: 3px 0;
+    font-size: 0.95em;
+}
+
+.data-input button {
+    margin-top: 10px;
+    margin-right: 5px;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+/* 響應式調整 (讓手機畫面更好看) */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    
+    #login-container, #student-container, #teacher-container {
+        padding: 20px;
+        margin: 10px auto;
+    }
+
+    /* 確保所有輸入框和按鈕在小螢幕上正常顯示 */
+    #login-form button {
+        width: 100%;
+    }
 }
