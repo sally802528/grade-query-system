@@ -1,4 +1,4 @@
-// 【最終程式碼】
+// 【優化與混淆版本 - 修正後】
 
 const DATA_FILE_URL = './data/grades_encrypted.json';
 const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼仍然使用明文比對
@@ -6,9 +6,8 @@ const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼仍然使用明文比�
 let allStudents = {}; // 儲存解密後的資料
 
 // ----------------------------------------------------------------------
-// 1. 金鑰混淆層
+// 1. 金鑰混淆層 (使用您自己的金鑰替換！)
 // ----------------------------------------------------------------------
-// 替換這裡為您的 Base64 加密金鑰的片段，增加提取難度。
 const K_PARTS = [
     'a0VGM3NMM3pR',
     'N3lQZH',
@@ -56,7 +55,7 @@ async function loadData() {
         document.getElementById('status-message').textContent = '資料載入完成。';
         return true;
     } catch (error) {
-        document.getElementById('status-message').textContent = '資料載入失敗，請聯繫管理員。';
+        document.getElementById('status-message').textContent = '資料載入失敗，請檢查檔案和金鑰。';
         console.error("Data Load Error:", error);
         return false;
     }
@@ -64,28 +63,24 @@ async function loadData() {
 
 
 // ----------------------------------------------------------------------
-// 3. PBKDF2 雜湊比對函數
+// 3. PBKDF2 雜湊比對函數 (假設格式為 'hash:salt:iterations')
 // ----------------------------------------------------------------------
 
-// 這裡我們需要一個函數來解析 PBKDF2 格式，並計算雜湊值
-// 假設您的 pbkdf2Hash 格式為： 'hash:salt:iterations'
 function parseAndVerifyHash(password, storedHash) {
     try {
         const parts = storedHash.split(':');
         const [hash, salt, iterations] = parts;
         
-        // **使用 CryptoJS 進行 PBKDF2 雜湊比對**
         // 確保 keySize, iterations, salt 與您本地加密時的參數一致！
-        const keySize = 256 / 32; // 256位元 (32位元組)
+        const keySize = 256 / 32; 
         const computedHash = CryptoJS.PBKDF2(password, salt, { 
             keySize: keySize, 
             iterations: parseInt(iterations, 10),
-            hasher: CryptoJS.algo.SHA256 // 假設您使用 SHA256 基礎雜湊
+            hasher: CryptoJS.algo.SHA256 
         }).toString();
         
         return computedHash === hash;
     } catch (e) {
-        console.error("PBKDF2 驗證錯誤:", e);
         return false;
     }
 }
@@ -100,39 +95,45 @@ async function handleLogin() {
         if (!(await loadData())) return;
     }
 
-    const school = document.getElementById('school').value.trim();
     const studentClass = document.getElementById('class').value.trim();
     const account = document.getElementById('account').value.trim().toUpperCase();
     const password = document.getElementById('password').value;
     
-    // 教師登入檢查
-    if (school === '' && studentClass === '' && password === TEACHER_PASSWORD) {
-        document.getElementById('status-message').textContent = '教師登入成功。';
-        displayTeacherData();
-        return;
-    }
-
-    // 學生登入檢查
+    // 學生登入檢查 (無 school 欄位)
     const student = allStudents[account];
 
     if (student && student.class === studentClass) {
         if (parseAndVerifyHash(password, student.pbkdf2Hash)) {
             displayStudentData(student);
         } else {
-            alert('學號、班級或密碼錯誤。');
+            alert('班級、學號或密碼錯誤。');
         }
     } else {
         alert('查無此學生資料或資訊錯誤。');
     }
 }
 
+function handleTeacherLogin() {
+    const account = document.getElementById('account').value.trim();
+    const password = document.getElementById('password').value;
+    
+    if (password === TEACHER_PASSWORD) {
+        document.getElementById('status-message').textContent = '教師登入成功。';
+        displayTeacherData();
+    } else {
+        alert('教師密碼錯誤！');
+    }
+}
+
+
 function logout() {
     document.getElementById('student-container').style.display = 'none';
     document.getElementById('teacher-container').style.display = 'none';
     document.getElementById('login-container').style.display = 'block';
     document.getElementById('status-message').textContent = '';
-    // 清空密碼欄位
     document.getElementById('password').value = '';
+    document.getElementById('account').value = '';
+    document.getElementById('class').value = '';
 }
 
 
@@ -165,22 +166,21 @@ function displayStudentData(student) {
     }
 }
 
-// ⚠️ 【警告】教師管理功能在這裡是無效的，無法儲存變更。
 function displayTeacherData() {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('teacher-container').style.display = 'block';
     
     const listDiv = document.getElementById('teacher-data-list');
-    listDiv.innerHTML = '<h3>學生清單 (僅瀏覽)</h3>';
+    listDiv.innerHTML = '<h3>學生清單 (僅瀏覽，無法儲存變更)</h3>';
 
     Object.values(allStudents).forEach(student => {
         listDiv.innerHTML += `
-            <div class="data-input" style="border: 1px solid #ccc; padding: 10px; margin-top: 5px;">
+            <div class="data-input" style="border: 1px solid var(--border-color); padding: 10px; margin-top: 5px;">
                 <p><strong>學號:</strong> ${student.account}</p>
                 <p><strong>姓名:</strong> ${student.name}</p>
                 <p><strong>班級:</strong> ${student.class}</p>
                 <p><strong>任務數:</strong> ${student.tasks ? student.tasks.length : 0}</p>
-                <button disabled>編輯 (儲存無效)</button>
+                <button disabled>編輯 (無效)</button>
                 <button disabled>刪除 (無效)</button>
             </div>
         `;
