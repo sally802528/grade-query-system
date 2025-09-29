@@ -5,7 +5,7 @@
 // ----------------------------------------------------------------------
 // 🚨 請將這裡的 URL 替換成您自己的 Worker 部署網址 + /api 🚨
 // 範例：const API_BASE_URL = 'https://grade-query-worker.workers.dev/api'; 
-const API_BASE_URL = 'https://grade-query-system.pages.dev/api'; // **請務必修改這裡**
+const API_BASE_URL = '/api'; // <--- 修正為 Pages Functions 的相對路徑
 const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼
 // ----------------------------------------------------------------------
 
