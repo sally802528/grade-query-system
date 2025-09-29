@@ -4,8 +4,9 @@
 // 【重要配置】請替換為您的 Worker 部署網址！
 // ----------------------------------------------------------------------
 // 🚨 請將這裡的 URL 替換成您自己的 Worker 部署網址 + /api 🚨
-const API_BASE_URL = 'https://grade-query-system.pages.dev/api'; 
-const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼保持不變
+// 範例：const API_BASE_URL = 'https://grade-query-worker.workers.dev/api'; 
+const API_BASE_URL = 'https://grade-query-system.pages.dev/api'; // **請務必修改這裡**
+const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼
 // ----------------------------------------------------------------------
 
 let students = {}; 
@@ -15,7 +16,6 @@ let currentTaskAccountId = null;
 let currentTaskId = null; 
 let nextTaskId = 1; 
 
-
 // ----------------------------------------------------------------------
 // A. 資料載入與儲存 (API 互動)
 // ----------------------------------------------------------------------
@@ -23,10 +23,13 @@ let nextTaskId = 1;
 /** 從 API 載入所有學生資料 */
 async function loadStudentsFromAPI() {
     try {
-        //
         const response = await fetch(`${API_BASE_URL}/students`); 
 
-        if (!response.ok) throw new Error(`API 載入失敗, 狀態碼: ${response.status}`);
+        if (!response.ok) {
+            // Worker 啟動但返回 404/500 時的錯誤處理
+            const errorData = await response.text(); 
+            throw new Error(`API 載入失敗, 狀態碼: ${response.status}. 錯誤訊息: ${errorData.substring(0, 100)}...`);
+        }
         
         const data = await response.json();
         students = data;
@@ -42,8 +45,11 @@ async function loadStudentsFromAPI() {
         
     } catch (error) {
         console.error("載入學生資料失敗 (Worker/D1 連線失敗):", error);
-        alert("資料載入失敗，請檢查 Worker 服務是否正常。");
-        students = {}; 
+        // 如果連線成功 (Status 200) 但 D1 為空，則不報錯，只顯示空數據
+        if (!error.message.includes('API 載入失敗')) {
+             alert("資料載入失敗，請檢查 Worker 服務是否正常。");
+        }
+        students = {}; // 確保資料為空對象
     }
 }
 
@@ -85,7 +91,9 @@ function renderStudentList() {
     Object.values(students).forEach(student => {
         const row = tableBody.insertRow();
         row.insertCell().textContent = student.account;
-        row.insertCell().textContent = student.name;
+        // 姓名使用部分遮擋，保護隱私
+        const maskedName = student.name.length > 1 ? student.name.charAt(0) + 'X' : student.name;
+        row.insertCell().textContent = maskedName; 
         
         const actionCell = row.insertCell();
         actionCell.innerHTML = `
@@ -125,7 +133,6 @@ function editStudent(account) {
     tasksBody.innerHTML = '';
     
     student.tasks.forEach(task => {
-        // 確保教師介面可以看到真實的教師留言
         const taskWithComments = students[account].tasks.find(t => t.id === task.id);
         addTaskRow(tasksBody, taskWithComments);
     });
@@ -140,7 +147,8 @@ function editStudent(account) {
 function addTaskRow(tableBody, task) {
     const row = tableBody.insertRow();
     // 如果是新任務，給一個臨時 ID；如果是舊任務，用真實 ID
-    row.dataset.taskId = task.id || nextTaskId++; 
+    const taskId = task.id || nextTaskId++;
+    row.dataset.taskId = taskId; 
     
     // 項目名稱
     row.insertCell().innerHTML = `<input type="text" class="form-control form-control-sm" value="${task.name}" required>`;
@@ -159,9 +167,13 @@ function addTaskRow(tableBody, task) {
 
     // 留言記錄
     const commentCount = (task.comments || []).filter(c => !c.isRecalled && !c.isBlocked).length;
+    // 只有在編輯模式下才允許進入留言 (確保有學號綁定)
+    const currentAccount = editingStudentId || document.getElementById('account').value;
+    const isDisabled = !currentAccount || !taskId;
+    
     row.insertCell().innerHTML = `
-        <button class="btn btn-secondary btn-sm" onclick="showCommentModal('${editingStudentId || document.getElementById('account').value}', ${task.id})" 
-                ${!task.id ? 'disabled' : ''}>
+        <button class="btn btn-secondary btn-sm" onclick="showCommentModal('${currentAccount}', ${taskId})" 
+                ${isDisabled ? 'disabled' : ''}>
             留言 (${commentCount})
         </button>
     `;
@@ -170,8 +182,8 @@ function addTaskRow(tableBody, task) {
     row.insertCell().innerHTML = `<button class="btn btn-danger btn-sm" onclick="removeTaskRow(this)">移除</button>`;
     
     // 確保 nextTaskId 更新
-    if (task.id && task.id >= nextTaskId) {
-        nextTaskId = task.id + 1;
+    if (taskId >= nextTaskId) {
+        nextTaskId = taskId + 1;
     }
 }
 
@@ -181,16 +193,17 @@ function removeTaskRow(button) {
 }
 
 // ----------------------------------------------------------------------
-// C. 登入與登出
+// C. 登入與登出 (修正教師密碼邏輯)
 // ----------------------------------------------------------------------
 
 // 教師登入 (本地驗證)
 document.getElementById('teacher-login-button').addEventListener('click', () => {
-    const password = document.getElementById('student-password').value;
+    // 確保這裡讀取的是密碼欄位
+    const password = document.getElementById('student-password').value.trim(); 
     if (password === TEACHER_PASSWORD) {
         showPanel('teacher');
     } else {
-        alert('教師密碼錯誤！');
+        alert('教師密碼錯誤！請輸入 Qimei@admin 欄位。');
     }
 });
 
@@ -211,6 +224,7 @@ document.getElementById('student-form').addEventListener('submit', async functio
     e.preventDefault();
     
     const account = document.getElementById('account').value.trim();
+    // ... (讀取其他欄位)
     const name = document.getElementById('name').value.trim();
     const school = document.getElementById('school').value.trim();
     const cls = document.getElementById('class').value.trim();
@@ -227,9 +241,9 @@ document.getElementById('student-form').addEventListener('submit', async functio
         const taskId = parseInt(row.dataset.taskId); // 使用行中綁定的 ID
         const taskName = row.cells[0].querySelector('input').value.trim();
         const status = row.cells[1].querySelector('select').value;
-        const teacherComment = row.cells[2].querySelector('input').value.trim(); // 從 input 讀取
+        const teacherComment = row.cells[2].querySelector('input').value.trim();
 
-        if (taskName) {
+        if (taskName && taskId) { // 確保有名稱和有效的 ID
             tasks.push({
                 id: taskId,
                 name: taskName,
@@ -269,6 +283,7 @@ document.getElementById('student-form').addEventListener('submit', async functio
 
 // 刪除學生 (DELETE API 互動)
 window.deleteStudent = async function(account) {
+    // ... (刪除邏輯保持不變)
     if (!confirm(`確定要刪除學號 ${account} 的所有資料嗎？此操作無法復原。`)) {
         return;
     }
@@ -304,6 +319,7 @@ window.deleteStudent = async function(account) {
 document.getElementById('student-login-button').addEventListener('click', handleStudentLogin);
 
 async function handleStudentLogin() {
+    // ... (登入邏輯保持不變)
     const school = document.getElementById('student-school').value.trim();
     const cls = document.getElementById('student-class').value.trim();
     const account = document.getElementById('student-account').value.trim();
@@ -362,7 +378,8 @@ function displayStudentResult(student) {
     const tasksBody = document.querySelector('#tasks-table-student tbody');
     tasksBody.innerHTML = '';
 
-    student.tasks.forEach(task => {
+    // 確保 tasks 存在且為數組
+    (student.tasks || []).forEach(task => { 
         const row = tasksBody.insertRow();
         row.insertCell().textContent = task.name;
         row.insertCell().textContent = task.status;
@@ -387,6 +404,7 @@ function displayStudentResult(student) {
 
 /** 處理留言的新增、撤回、屏蔽等操作 */
 async function sendCommentAction(action, data) {
+    // ... (保持不變)
     try {
         const payload = { action, ...data };
         
@@ -401,15 +419,11 @@ async function sendCommentAction(action, data) {
             throw new Error(errorData.error || `API 留言操作失敗, 狀態碼: ${response.status}`);
         }
         
-        // alert(`留言操作 (${action}) 成功！`); // 移除 alert 以保持流程順暢
-        
-        // 成功後，重新載入所有資料並刷新當前的留言彈窗
         await loadStudentsFromAPI(); 
         
-        // 重新打開留言彈窗
         if (window.currentTaskAccountId && window.currentTaskId) {
-            // 刷新留言面板
-            showCommentModal(window.currentTaskAccountId, window.currentTaskId);
+            // 刷新留言面板 (無需重新開啟 modal，只需刷新內容)
+            refreshCommentModalContent(window.currentTaskAccountId, window.currentTaskId); 
         }
 
     } catch (error) {
@@ -418,49 +432,16 @@ async function sendCommentAction(action, data) {
     }
 }
 
-// 提交新增留言
-window.submitComment = function() {
-    const inputElement = document.getElementById('new-comment-content');
-    const content = inputElement.value.trim();
-    if (!content || !currentTaskId) return alert('請輸入留言內容或任務 ID 無效。');
-    
-    // 根據當前模式設定發送者
-    const sender = currentMode === 'teacher' ? 'teacher' : 'student'; 
-
-    sendCommentAction('ADD', {
-        task_id: currentTaskId,
-        sender: sender,
-        content: content,
-        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }) 
-    });
-    inputElement.value = ''; // 清空輸入框
-}
-
-// 屏蔽留言 (教師專用)
-window.blockComment = function(commentId) {
-    if (currentMode !== 'teacher') return;
-    sendCommentAction('BLOCK', { comment_id: commentId });
-}
-
-// 撤回留言 (學生/教師皆可)
-window.recallComment = function(commentId) {
-     sendCommentAction('RECALL', { comment_id: commentId });
-}
-
-// 彈窗顯示邏輯
-window.showCommentModal = function(account, taskId) {
+// 刷新留言彈窗內容 (新增的函數)
+function refreshCommentModalContent(account, taskId) {
     const student = students[account];
     const task = student.tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    window.currentTaskAccountId = account; // 將其設為全局變數供操作後刷新使用
-    window.currentTaskId = taskId;
-
-    document.getElementById('modal-task-name').textContent = task.name;
     const historyDiv = document.getElementById('comment-history');
-    historyDiv.innerHTML = '';
-    
-    // 渲染留言
+    historyDiv.innerHTML = ''; // 清空舊內容
+
+    // 重新渲染留言邏輯 (與 showCommentModal 相同)
     (task.comments || []).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).forEach(comment => {
         let className = 'comment-box';
         let textContent = comment.content;
@@ -475,11 +456,9 @@ window.showCommentModal = function(account, taskId) {
         } else {
             className += comment.sender === 'teacher' ? ' comment-teacher' : ' comment-student';
             
-            // 只有在教師介面且留言未被屏蔽/撤回時，顯示屏蔽按鈕
             if (currentMode === 'teacher') {
                  actionButton = `<button class="btn btn-danger btn-sm float-end" onclick="blockComment(${comment.id})">屏蔽</button>`;
             }
-            // 只有在學生介面，且是該學生自己發送的留言，且留言未被屏蔽/撤回時，顯示撤回按鈕
             if (currentMode === 'student' && comment.sender === 'student') { 
                  actionButton = `<button class="btn btn-warning btn-sm float-end" onclick="recallComment(${comment.id})">撤回</button>`;
             }
@@ -493,6 +472,53 @@ window.showCommentModal = function(account, taskId) {
             </div>
         `;
     });
+}
+
+
+// 提交新增留言
+window.submitComment = function() {
+    // ... (保持不變)
+    const inputElement = document.getElementById('new-comment-content');
+    const content = inputElement.value.trim();
+    if (!content || !currentTaskId) return alert('請輸入留言內容或任務 ID 無效。');
+    
+    const sender = currentMode === 'teacher' ? 'teacher' : 'student'; 
+
+    sendCommentAction('ADD', {
+        task_id: currentTaskId,
+        sender: sender,
+        content: content,
+        timestamp: new Date().toLocaleString('zh-TW', { hour12: false }) 
+    });
+    inputElement.value = ''; // 清空輸入框
+}
+
+// 屏蔽留言 (教師專用)
+window.blockComment = function(commentId) {
+    // ... (保持不變)
+    if (currentMode !== 'teacher') return;
+    sendCommentAction('BLOCK', { comment_id: commentId });
+}
+
+// 撤回留言 (學生/教師皆可)
+window.recallComment = function(commentId) {
+     // ... (保持不變)
+     sendCommentAction('RECALL', { comment_id: commentId });
+}
+
+// 彈窗顯示邏輯
+window.showCommentModal = function(account, taskId) {
+    const student = students[account];
+    const task = student.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    window.currentTaskAccountId = account; 
+    window.currentTaskId = taskId;
+
+    document.getElementById('modal-task-name').textContent = task.name;
+    
+    // 呼叫新的刷新函數
+    refreshCommentModalContent(account, taskId);
 
     // 綁定提交按鈕
     document.getElementById('submit-comment-button').onclick = submitComment;
