@@ -1,41 +1,206 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成績查詢與管理系統</title>
+    <title>活動/成績認證查詢系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="login-container">
-        <h2>成績查詢登入</h2>
-        <div id="login-form">
-            <input type="text" id="class" placeholder="班級/科別 (教師請留空)">
-            <input type="text" id="account" placeholder="學號/帳號 (教師請輸入密碼)">
-            <input type="password" id="password" placeholder="密碼">
-            
-            <button onclick="handleLogin()">登入</button>
-            <button onclick="handleTeacherLogin()">我是教師，點擊進入管理介面</button>
+    <div id="app-container">
+        <h1>活動/成績認證查詢系統</h1>
 
-            <div id="status-message"></div>
+        <div id="login-container" class="card">
+            <h2>成績查詢登入</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="school">學校名稱：</label>
+                    <input type="text" id="school" value="永靖高工" required>
+                </div>
+                <div class="input-group">
+                    <label for="class">班級：</label>
+                    <input type="text" id="class" value="資訊二" required>
+                </div>
+                <div class="input-group">
+                    <label for="account">學號：</label>
+                    <input type="text" id="account" placeholder="請輸入學號" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">密碼 (Qimei@admin)：</label>
+                    <input type="password" id="password" placeholder="輸入查詢密碼或學號密碼" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="primary-btn">登入查詢</button>
+                    <button type="button" class="secondary-btn teacher-btn" onclick="showAdminLogin()">我是教師，點擊登入管理介面</button>
+                </div>
+                <p id="login-error" class="error-msg hidden"></p>
+            </form>
+        </div>
+
+        <div id="admin-login-container" class="card hidden">
+            <h2>教師管理員登入</h2>
+            <form id="admin-login-form">
+                <div class="input-group">
+                    <label for="admin-password">管理密碼 (Teacher@admin)：</label>
+                    <input type="password" id="admin-password" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="primary-btn" style="background-color: #2c3e50;">登入管理</button>
+                    <button type="button" class="secondary-btn" onclick="showStudentLogin()">返回學生登入</button>
+                </div>
+                <p id="admin-login-error" class="error-msg hidden"></p>
+            </form>
+        </div>
+
+        <div id="result-container" class="hidden">
+            <div class="card result-info">
+                <div class="info-block">
+                    <h2>學生基本資料</h2>
+                    <p>學號：<span id="result-account"></span></p>
+                    <p>姓名：<span id="result-name"></span></p>
+                    <p>學校：<span id="result-school"></span></p>
+                    <p>班級：<span id="result-class"></span></p>
+                    <p>電子郵件：<span id="result-email"></span></p>
+                </div>
+                <button type="button" class="danger-btn" onclick="logout()">登出查詢</button>
+            </div>
+
+            <div class="card result-tasks">
+                <h2>學期活動/成績項目</h2>
+                <table id="tasks-table-student" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>項目名稱</th>
+                            <th>狀態</th>
+                            <th style="width: 250px;">留言/操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="admin-container" class="hidden">
+            <div class="admin-header">
+                <h2>學生資料管理介面</h2>
+                <button type="button" class="secondary-btn" onclick="adminLogout()">登出教師介面</button>
+            </div>
+            
+            <div class="admin-content">
+                
+                <div class="card form-card">
+                    
+                    <div id="admin-welcome-panel">
+                        <h2>歡迎使用七美科技 成績登入系統</h2>
+                        <p style="margin-top: 20px; margin-bottom: 30px; color: #555;">請選擇您的操作項目：</p>
+                        <div class="button-group-vertical">
+                            <button type="button" class="primary-btn" onclick="animateStudentList()">
+                                查看/編輯學生資料
+                            </button>
+                            <button type="button" class="success-btn" style="margin-top: 15px;" onclick="showStudentForm('new')">
+                                新增學生
+                            </button>
+                        </div>
+                        <p id="list-tip-message" class="hidden" style="margin-top: 20px; color: #e67e22; font-weight: bold;">
+                             請點擊右側學生列表中的「編輯」按鈕查看詳情。
+                        </p>
+                    </div>
+
+                    <div id="student-form-panel" class="hidden">
+                        <h2 id="student-form-title">新增學生</h2>
+                        <form id="student-form">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="admin-account">學號 (唯一)：</label>
+                                    <input type="text" id="admin-account" placeholder="輸入學號" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="admin-name">姓名 (遮擋前)：</label>
+                                    <input type="text" id="admin-name" placeholder="輸入學生全名" required>
+                                </div>
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="admin-school">學校名稱：</label>
+                                    <input type="text" id="admin-school" value="永靖高工" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="admin-class">班級：</label>
+                                    <input type="text" id="admin-class" value="資訊二" required>
+                                </div>
+                            </div>
+                            <div class="input-group full-width">
+                                <label for="admin-email">電子郵件：</label>
+                                <input type="email" id="admin-email" placeholder="電子郵件 (用於遮擋顯示)">
+                            </div>
+                            
+                            <h3 style="margin-top: 30px;">活動/成績項目管理</h3>
+                            <table id="tasks-table-admin" class="data-table small-header">
+                                <thead>
+                                    <tr>
+                                        <th>項目名稱</th>
+                                        <th>狀態</th>
+                                        <th style="width: 150px;">教師留言狀態</th>
+                                        <th style="width: 100px;">留言記錄</th>
+                                        <th style="width: 80px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    </tbody>
+                            </table>
+                            
+                            <button type="button" class="secondary-btn" onclick="addTaskRow()" style="margin-top: 10px;">+ 新增項目</button>
+                            
+                            <div class="form-actions">
+                                <button type="submit" id="submit-student-btn" class="primary-btn">新增學生</button>
+                                
+                                <button type="button" id="switch-to-new-student-btn" class="success-btn hidden" onclick="switchToNewStudentMode(true)">新增學生 (切換)</button>
+                                
+                                <button type="button" class="secondary-btn" onclick="showWelcomePanel(true)">返回</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <div class="card list-card" id="student-list-card">
+                    <h2>所有學生列表</h2>
+                    <table id="student-list-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>學號</th>
+                                <th>姓名</th>
+                                <th style="width: 150px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="comment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">項目留言</h2>
+
+            <div id="comment-history" class="comment-history-area">
+                </div>
+            
+            <div id="new-comment-area" class="new-comment-area">
+                <h3>新增留言</h3>
+                <textarea id="comment-input" placeholder="輸入給學生的留言..." rows="4"></textarea>
+                <button type="button" id="submit-comment-btn" class="primary-btn">提交留言</button>
+            </div>
         </div>
     </div>
 
-    <div id="student-container" style="display:none;">
-        <h2>成績查詢結果</h2>
-        <div id="student-info"></div>
-        <div id="tasks-list"></div>
-        <button onclick="logout()">登出查詢</button>
-    </div>
-
-    <div id="teacher-container" style="display:none;">
-        <h2>教師管理介面 (僅瀏覽，無法儲存變更)</h2>
-        <div id="teacher-data-list"></div>
-        <button onclick="logout()">登出管理</button>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
