@@ -3,9 +3,9 @@
 // ----------------------------------------------------------------------
 // 【重要配置】請替換為您的 Worker 部署網址！
 // ----------------------------------------------------------------------
-// 請確保這是您 Worker 部署後網址 + /api 路徑
+// 🚨 請將這裡的 URL 替換成您自己的 Worker 部署網址 + /api 🚨
 const API_BASE_URL = 'https://grade-query-system.pages.dev/api'; 
-const TEACHER_PASSWORD = 'Teacher@admin'; 
+const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼保持不變
 // ----------------------------------------------------------------------
 
 let students = {}; 
@@ -20,13 +20,11 @@ let nextTaskId = 1;
 // A. 資料載入與儲存 (API 互動)
 // ----------------------------------------------------------------------
 
-/** 移除舊的 saveStudents 函式，雲端模式下不需要 */
-function saveStudents() {}
-
-/** 從 API 載入所有學生資料 (替換舊的 loadStudents) */
+/** 從 API 載入所有學生資料 */
 async function loadStudentsFromAPI() {
     try {
-        const response = await fetch(`${API_BASE_URL}/students`);
+        //
+        const response = await fetch(`${API_BASE_URL}/students`); 
 
         if (!response.ok) throw new Error(`API 載入失敗, 狀態碼: ${response.status}`);
         
@@ -51,6 +49,7 @@ async function loadStudentsFromAPI() {
 
 /** 啟動時呼叫 */
 document.addEventListener('DOMContentLoaded', async () => {
+    // 首次載入資料
     await loadStudentsFromAPI(); 
     showPanel('login');
 });
@@ -104,7 +103,7 @@ function resetStudentForm() {
     document.querySelector('#tasks-table-admin tbody').innerHTML = '';
     editingStudentId = null;
     
-    // 初始化一個空任務 (可選)
+    // 初始化一個空任務 
     addTaskRow(document.querySelector('#tasks-table-admin tbody'), { id: nextTaskId, name: '', status: '未完成', teacherComment: '', comments: [] });
 }
 
@@ -126,7 +125,9 @@ function editStudent(account) {
     tasksBody.innerHTML = '';
     
     student.tasks.forEach(task => {
-        addTaskRow(tasksBody, task);
+        // 確保教師介面可以看到真實的教師留言
+        const taskWithComments = students[account].tasks.find(t => t.id === task.id);
+        addTaskRow(tasksBody, taskWithComments);
     });
     
     // 如果沒有任務，新增一個空的
@@ -138,7 +139,8 @@ function editStudent(account) {
 
 function addTaskRow(tableBody, task) {
     const row = tableBody.insertRow();
-    row.dataset.taskId = task.id; // 綁定任務 ID
+    // 如果是新任務，給一個臨時 ID；如果是舊任務，用真實 ID
+    row.dataset.taskId = task.id || nextTaskId++; 
     
     // 項目名稱
     row.insertCell().innerHTML = `<input type="text" class="form-control form-control-sm" value="${task.name}" required>`;
@@ -153,8 +155,8 @@ function addTaskRow(tableBody, task) {
     `;
     
     // 教師留言狀態
-    row.insertCell().textContent = task.teacherComment || '無教師留言';
-    
+    row.insertCell().innerHTML = `<input type="text" class="form-control form-control-sm" value="${task.teacherComment || ''}">`;
+
     // 留言記錄
     const commentCount = (task.comments || []).filter(c => !c.isRecalled && !c.isBlocked).length;
     row.insertCell().innerHTML = `
@@ -221,12 +223,11 @@ document.getElementById('student-form').addEventListener('submit', async functio
 
     // 1. 整理 tasks 數據
     const tasks = [];
-    let isTaskValid = true;
     document.querySelectorAll('#tasks-table-admin tbody tr').forEach(row => {
-        const taskId = parseInt(row.dataset.taskId) || nextTaskId++; // 使用已有的 ID 或新的 ID
+        const taskId = parseInt(row.dataset.taskId); // 使用行中綁定的 ID
         const taskName = row.cells[0].querySelector('input').value.trim();
         const status = row.cells[1].querySelector('select').value;
-        const teacherComment = row.cells[2].textContent; // 保持現有的 comment 內容
+        const teacherComment = row.cells[2].querySelector('input').value.trim(); // 從 input 讀取
 
         if (taskName) {
             tasks.push({
@@ -256,6 +257,7 @@ document.getElementById('student-form').addEventListener('submit', async functio
 
         alert('學生資料儲存成功！');
         
+        // 重新載入並刷新介面
         await loadStudentsFromAPI(); 
         showPanel('teacher'); 
 
@@ -312,6 +314,7 @@ async function handleStudentLogin() {
         return;
     }
     
+    // 密碼驗證 (簡化為學號等於密碼)
     if (password !== account) {
         alert('密碼錯誤！請輸入學號作為密碼。');
         return;
@@ -325,7 +328,8 @@ async function handleStudentLogin() {
         });
 
         if (!response.ok) {
-            throw new Error('查無此學生資料，請確認輸入資訊是否正確。');
+            const errorData = await response.json();
+            throw new Error(errorData.error || '查無此學生資料，請確認輸入資訊是否正確。');
         }
         
         const studentData = await response.json();
@@ -350,8 +354,8 @@ function displayStudentResult(student) {
     document.getElementById('result-class').textContent = student.class;
     
     // 渲染 Email (遮蔽處理)
-    const [local, domain] = student.email.split('@');
-    const maskedLocal = local.length > 3 ? local.substring(0, 3) + '...' : local;
+    const [local, domain] = (student.email || '無@email.com').split('@');
+    const maskedLocal = local.length > 3 ? local.substring(0, 3) + '***' : local;
     document.getElementById('result-email').textContent = student.email ? `${maskedLocal}@${domain}` : '無';
 
     // 渲染任務列表
@@ -397,13 +401,14 @@ async function sendCommentAction(action, data) {
             throw new Error(errorData.error || `API 留言操作失敗, 狀態碼: ${response.status}`);
         }
         
-        alert(`留言操作 (${action}) 成功！`);
+        // alert(`留言操作 (${action}) 成功！`); // 移除 alert 以保持流程順暢
         
         // 成功後，重新載入所有資料並刷新當前的留言彈窗
         await loadStudentsFromAPI(); 
         
         // 重新打開留言彈窗
         if (window.currentTaskAccountId && window.currentTaskId) {
+            // 刷新留言面板
             showCommentModal(window.currentTaskAccountId, window.currentTaskId);
         }
 
@@ -433,10 +438,11 @@ window.submitComment = function() {
 
 // 屏蔽留言 (教師專用)
 window.blockComment = function(commentId) {
+    if (currentMode !== 'teacher') return;
     sendCommentAction('BLOCK', { comment_id: commentId });
 }
 
-// 撤回留言 (學生/教師皆可，但需在 Worker 中驗證發送者，這裡簡化)
+// 撤回留言 (學生/教師皆可)
 window.recallComment = function(commentId) {
      sendCommentAction('RECALL', { comment_id: commentId });
 }
@@ -447,8 +453,8 @@ window.showCommentModal = function(account, taskId) {
     const task = student.tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    currentTaskAccountId = account;
-    currentTaskId = taskId;
+    window.currentTaskAccountId = account; // 將其設為全局變數供操作後刷新使用
+    window.currentTaskId = taskId;
 
     document.getElementById('modal-task-name').textContent = task.name;
     const historyDiv = document.getElementById('comment-history');
@@ -473,7 +479,7 @@ window.showCommentModal = function(account, taskId) {
             if (currentMode === 'teacher') {
                  actionButton = `<button class="btn btn-danger btn-sm float-end" onclick="blockComment(${comment.id})">屏蔽</button>`;
             }
-            // 只有在學生介面且留言未被屏蔽/撤回時，顯示撤回按鈕 (這裡簡化為所有未屏蔽/撤回的都可撤回)
+            // 只有在學生介面，且是該學生自己發送的留言，且留言未被屏蔽/撤回時，顯示撤回按鈕
             if (currentMode === 'student' && comment.sender === 'student') { 
                  actionButton = `<button class="btn btn-warning btn-sm float-end" onclick="recallComment(${comment.id})">撤回</button>`;
             }
