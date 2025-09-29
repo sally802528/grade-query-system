@@ -1,0 +1,24 @@
+{
+  "109A001": {
+    "account": "109A001",
+    "name": "王小明",
+    "class": "109A",
+    "pbkdf2Hash": "...", // **【重要】儲存您的 PBKDF2 雜湊結果**
+    "tasks": [
+      {
+        "id": 1,
+        "name": "期中專題",
+        "status": "A+",
+        "teacherComment": "報告完整，邏輯清晰。"
+      }
+    ]
+  },
+  "109A002": {
+    "account": "109A002",
+    "name": "陳小華",
+    "class": "109A",
+    "pbkdf2Hash": "...",
+    "tasks": []
+  }
+}
+// 注意：最終上傳到 GitHub Pages 的是這個檔案的 AES 加密版本。
