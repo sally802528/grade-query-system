@@ -4,26 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成績查詢與管理系統</title>
-    <style>
-        /* 這裡放置您的 CSS 樣式 */
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #login-container, #teacher-container, #student-container { 
-            max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; 
-        }
-        .task-item { border-bottom: 1px dotted #eee; padding: 10px 0; }
-        .data-input { margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-container">
-        <h2>登入系統</h2>
+        <h2>成績查詢登入</h2>
         <div id="login-form">
-            <input type="text" id="school" placeholder="學校名稱 (教師請留空)">
             <input type="text" id="class" placeholder="班級/科別 (教師請留空)">
-            <input type="text" id="account" placeholder="學號/帳號">
+            <input type="text" id="account" placeholder="學號/帳號 (教師請輸入密碼)">
             <input type="password" id="password" placeholder="密碼">
+            
             <button onclick="handleLogin()">登入</button>
+            <button onclick="handleTeacherLogin()">我是教師，點擊進入管理介面</button>
+
             <div id="status-message"></div>
         </div>
     </div>
@@ -32,13 +26,13 @@
         <h2>成績查詢結果</h2>
         <div id="student-info"></div>
         <div id="tasks-list"></div>
-        <button onclick="logout()">登出</button>
+        <button onclick="logout()">登出查詢</button>
     </div>
 
     <div id="teacher-container" style="display:none;">
-        <h2>教師管理介面 (僅瀏覽)</h2>
+        <h2>教師管理介面 (僅瀏覽，無法儲存變更)</h2>
         <div id="teacher-data-list"></div>
-        <button onclick="logout()">登出</button>
+        <button onclick="logout()">登出管理</button>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
