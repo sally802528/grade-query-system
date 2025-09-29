@@ -4,7 +4,7 @@
 // 【重要配置】請替換為您的 Worker 部署網址！
 // ----------------------------------------------------------------------
 // 🚨 請將這裡的 URL 替換成您自己的 Worker 部署網址 + /api 🚨
-const API_BASE_URL = 'https://grade-query-system.pages.dev/api'; 
+const API_BASE_URL = 'https://grade-query-system.pages.dev'; 
 const TEACHER_PASSWORD = 'Teacher@admin'; // 教師密碼保持不變
 // ----------------------------------------------------------------------
 
